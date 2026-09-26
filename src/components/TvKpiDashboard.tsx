@@ -99,10 +99,13 @@ export default function TvKpiDashboard() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'shuttles' },
-        (payload) => {
-          setShuttles((prev) =>
-            prev.map((s) => (s.id === payload.new.id ? { ...s, ...payload.new } : s))
-          );
+        (payload: any) => {
+          const newRecord = payload?.new as ShuttleData | undefined;
+          if (newRecord && newRecord.id) {
+            setShuttles((prev) =>
+              prev.map((s) => (s.id === newRecord.id ? { ...s, ...newRecord } : s))
+            );
+          }
         }
       )
       .subscribe();
