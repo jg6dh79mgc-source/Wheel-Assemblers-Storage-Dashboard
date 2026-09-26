@@ -1,6 +1,46 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+function getValidSupabaseUrl(url?: string): string {
+  if (!url || typeof url !== 'string') {
+    return 'https://placeholder-wcs.supabase.co';
+  }
+
+  // Strip accidental brackets, quotes, or whitespace often copied from docs
+  let sanitized = url.trim().replace(/^[<"'\s]+|[>"'\s]+$/g, '');
+
+  // If user enters "xyz.supabase.co" without https://
+  if (!sanitized.startsWith('http://') && !sanitized.startsWith('https://')) {
+    sanitized = `https://${sanitized}`;
+  }
+
+  try {
+    const parsed = new URL(sanitized);
+    // Ensure it has a valid hostname (not placeholder brackets)
+    if (
+      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+      parsed.hostname &&
+      !parsed.hostname.includes('<') &&
+      !parsed.hostname.includes('>')
+    ) {
+      return sanitized;
+    }
+  } catch {
+    // In case of invalid URL string, return safe placeholder
+  }
+
+  return 'https://placeholder-wcs.supabase.co';
+}
+
+function getValidSupabaseKey(key?: string): string {
+  if (!key || typeof key !== 'string') {
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder-anon-key';
+  }
+
+  const sanitized = key.trim().replace(/^[<"'\s]+|[>"'\s]+$/g, '');
+  return sanitized.length > 0 ? sanitized : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder-anon-key';
+}
+
+const supabaseUrl = getValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const supabaseAnonKey = getValidSupabaseKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
