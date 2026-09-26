@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
 
 export const CHECKLIST_QUESTIONS: { id: number; text: string }[] = [
   { id: 1, text: 'Is the remote clean?' },
@@ -29,6 +32,7 @@ export const CHECKLIST_QUESTIONS: { id: number; text: string }[] = [
 ];
 
 export default function MobileInspectionView() {
+  const router = useRouter();
   const [shuttles, setShuttles] = useState<any[]>([]);
   const [selectedShuttleId, setSelectedShuttleId] = useState<string>('');
   const [inspectorName, setInspectorName] = useState<string>('');
@@ -57,8 +61,13 @@ export default function MobileInspectionView() {
   const [isSopDrawerOpen, setIsSopDrawerOpen] = useState(false);
   const [selectedSop, setSelectedSop] = useState<'FR-7.2-04' | 'E-STOP' | 'RF-PAIR'>('FR-7.2-04');
 
-  // Load shuttles from Supabase
+  // Load shuttles from Supabase & logged in operator
   useEffect(() => {
+    const user = getCurrentUser();
+    if (user && user.name) {
+      setInspectorName(user.name);
+    }
+
     async function fetchShuttles() {
       const { data, error } = await supabase
         .from('shuttles')
@@ -179,12 +188,24 @@ export default function MobileInspectionView() {
           </div>
           <h1 className="text-base font-extrabold text-white">Daily Shuttle Inspection (FR-7.2-04)</h1>
         </div>
-        <button
-          onClick={() => setIsSopDrawerOpen(true)}
-          className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 rounded-lg flex items-center gap-1 shadow-sm transition"
-        >
-          📖 SOPs
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsSopDrawerOpen(true)}
+            className="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 rounded-lg flex items-center gap-1 shadow-sm transition"
+          >
+            📖 SOPs
+          </button>
+          <button
+            onClick={() => {
+              setCurrentUser(null);
+              router.push('/');
+            }}
+            className="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 rounded-lg transition"
+            title="Sign Out"
+          >
+            Sign Out
+          </button>
+        </div>
       </header>
 
       {/* Main Container */}

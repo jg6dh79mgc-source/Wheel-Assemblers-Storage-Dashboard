@@ -16,6 +16,17 @@ export interface Shuttle {
   last_inspection_passed?: boolean;
 }
 
+export interface Operator {
+  id: string;
+  username: string;
+  name: string;
+  employee_id: string;
+  role: 'OPERATOR' | 'ADMIN' | 'MAINTENANCE_TECH';
+  shift: 'Shift 1 (06:00 - 14:00)' | 'Shift 2 (14:00 - 22:00)' | 'Shift 3 (22:00 - 06:00)';
+  active: boolean;
+  created_at: string;
+}
+
 export interface InspectionCheckItem {
   id: number;
   text: string;
