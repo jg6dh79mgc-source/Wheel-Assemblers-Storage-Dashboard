@@ -18,7 +18,7 @@ interface ShuttleData {
   charge_cycles: number;
   last_sensor_clean_at: string;
   last_inspection_passed?: boolean;
-  current_storeroom?: 'EXISTING' | 'NEW';
+  current_storeroom?: 'RIM' | 'TYRE';
   current_lane?: string;
   current_level?: number;
 }
@@ -84,7 +84,7 @@ function CircularMetric({
 
 // Cavity Definition
 interface CavitySlot {
-  store: 'EXISTING_RIM' | 'NEW_STORE';
+  store: 'RIM_STORE' | 'TYRE_STORE';
   col: string;
   level: number;
   type: 'LARGE_RIM' | 'SMALL_RIM' | 'EMPTY';
@@ -93,62 +93,62 @@ interface CavitySlot {
   capacity: number;
 }
 
-// Existing Rim Storeroom (Left Building, 8,730 mm width)
-const EXISTING_RIM_CAVITIES: CavitySlot[] = [
+// Rim Storeroom (Left Building, 8,730 mm width, Lanes L to G)
+const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   // Level 2 (Top)
-  { store: 'EXISTING_RIM', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 24, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 28, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 27, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 24, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
 
   // Level 1 (Middle)
-  { store: 'EXISTING_RIM', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 26, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 22, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 29, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 25, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 21, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 26, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 22, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 29, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 25, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 21, capacity: 29 },
 
   // Level 0 (Ground)
-  { store: 'EXISTING_RIM', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 29, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 27, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 26, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
-  { store: 'EXISTING_RIM', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 23, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 29, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 26, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 23, capacity: 29 },
 ];
 
-// New Storeroom (Right Building, 8,290 mm width, 7,350 mm height, Lanes A-E, 4 rows tall)
-const NEW_STOREROOM_CAVITIES: CavitySlot[] = [
-  // Level 3 (Top - Large Rims in blue matching CAD drawing)
-  { store: 'NEW_STORE', col: 'A', level: 3, type: 'LARGE_RIM', partCode: 'F122', occupied: 26, capacity: 29 },
-  { store: 'NEW_STORE', col: 'B', level: 3, type: 'LARGE_RIM', partCode: 'F124', occupied: 28, capacity: 29 },
-  { store: 'NEW_STORE', col: 'C', level: 3, type: 'LARGE_RIM', partCode: 'F126', occupied: 27, capacity: 29 },
-  { store: 'NEW_STORE', col: 'D', level: 3, type: 'LARGE_RIM', partCode: 'F128', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'E', level: 3, type: 'LARGE_RIM', partCode: 'F130', occupied: 25, capacity: 29 },
+// Tyre Storeroom (Right Building, 8,290 mm width, 7,350 mm height, Lanes numbered right to left A-E, 4 rows tall)
+const TYRE_STOREROOM_CAVITIES: CavitySlot[] = [
+  // Level 3 (Top Row 4 - Large Rims in blue)
+  { store: 'TYRE_STORE', col: 'E', level: 3, type: 'LARGE_RIM', partCode: 'T-130', occupied: 25, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'D', level: 3, type: 'LARGE_RIM', partCode: 'T-128', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'C', level: 3, type: 'LARGE_RIM', partCode: 'T-126', occupied: 27, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'B', level: 3, type: 'LARGE_RIM', partCode: 'T-124', occupied: 28, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'A', level: 3, type: 'LARGE_RIM', partCode: 'T-122', occupied: 26, capacity: 29 },
 
   // Level 2 (Row 3 - Small Rims in green)
-  { store: 'NEW_STORE', col: 'A', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'B', level: 2, type: 'SMALL_RIM', partCode: 'F102', occupied: 24, capacity: 29 },
-  { store: 'NEW_STORE', col: 'C', level: 2, type: 'SMALL_RIM', partCode: 'F104', occupied: 28, capacity: 29 },
-  { store: 'NEW_STORE', col: 'D', level: 2, type: 'SMALL_RIM', partCode: 'F106', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'E', level: 2, type: 'SMALL_RIM', partCode: 'F108', occupied: 23, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'E', level: 2, type: 'SMALL_RIM', partCode: 'T-108', occupied: 23, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'D', level: 2, type: 'SMALL_RIM', partCode: 'T-106', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'C', level: 2, type: 'SMALL_RIM', partCode: 'T-104', occupied: 28, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'B', level: 2, type: 'SMALL_RIM', partCode: 'T-102', occupied: 24, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'A', level: 2, type: 'SMALL_RIM', partCode: 'T-100', occupied: 29, capacity: 29 },
 
   // Level 1 (Row 2 - Small Rims in green)
-  { store: 'NEW_STORE', col: 'A', level: 1, type: 'SMALL_RIM', partCode: 'F110', occupied: 27, capacity: 29 },
-  { store: 'NEW_STORE', col: 'B', level: 1, type: 'SMALL_RIM', partCode: 'F112', occupied: 28, capacity: 29 },
-  { store: 'NEW_STORE', col: 'C', level: 1, type: 'SMALL_RIM', partCode: 'F114', occupied: 26, capacity: 29 },
-  { store: 'NEW_STORE', col: 'D', level: 1, type: 'SMALL_RIM', partCode: 'F116', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'E', level: 1, type: 'SMALL_RIM', partCode: 'F118', occupied: 24, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'E', level: 1, type: 'SMALL_RIM', partCode: 'T-118', occupied: 24, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'D', level: 1, type: 'SMALL_RIM', partCode: 'T-116', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'C', level: 1, type: 'SMALL_RIM', partCode: 'T-114', occupied: 26, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'B', level: 1, type: 'SMALL_RIM', partCode: 'T-112', occupied: 28, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'A', level: 1, type: 'SMALL_RIM', partCode: 'T-110', occupied: 27, capacity: 29 },
 
   // Level 0 (Row 1 Ground - Small Rims in green)
-  { store: 'NEW_STORE', col: 'A', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'B', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
-  { store: 'NEW_STORE', col: 'C', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
-  { store: 'NEW_STORE', col: 'D', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
-  { store: 'NEW_STORE', col: 'E', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'E', level: 0, type: 'SMALL_RIM', partCode: 'T-100', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'D', level: 0, type: 'SMALL_RIM', partCode: 'T-100', occupied: 28, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'C', level: 0, type: 'SMALL_RIM', partCode: 'T-100', occupied: 27, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'B', level: 0, type: 'SMALL_RIM', partCode: 'T-100', occupied: 29, capacity: 29 },
+  { store: 'TYRE_STORE', col: 'A', level: 0, type: 'SMALL_RIM', partCode: 'T-100', occupied: 29, capacity: 29 },
 ];
 
 export default function TvKpiDashboard() {
@@ -156,13 +156,16 @@ export default function TvKpiDashboard() {
   const [isOperatorModalOpen, setIsOperatorModalOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'MONITOR' | 'MAINTENANCE' | 'OEE'>('MONITOR');
+  
+  // Storeroom visibility toggle: 'BOTH' | 'RIM' | 'TYRE'
+  const [storeroomView, setStoreroomView] = useState<'BOTH' | 'RIM' | 'TYRE'>('BOTH');
   const [selectedCavity, setSelectedCavity] = useState<CavitySlot | null>(null);
 
   const [shuttles, setShuttles] = useState<ShuttleData[]>([
     {
       id: '1',
       code: 'SHUTTLE-01',
-      display_name: 'Shuttle 1 (Existing Rim Store)',
+      display_name: 'Shuttle 1 (Rim Storeroom)',
       status: 'LOCKED_PENDING_INSPECTION',
       battery_pct: 94,
       odometer_meters: 8840200,
@@ -170,14 +173,14 @@ export default function TvKpiDashboard() {
       charge_cycles: 2410,
       last_sensor_clean_at: new Date(Date.now() - 3 * 86400000).toISOString(),
       last_inspection_passed: false,
-      current_storeroom: 'EXISTING',
+      current_storeroom: 'RIM',
       current_lane: 'Lane J',
       current_level: 1,
     },
     {
       id: '2',
       code: 'SHUTTLE-02',
-      display_name: 'Shuttle 2 (New Storeroom)',
+      display_name: 'Shuttle 2 (Tyre Storeroom)',
       status: 'ACTIVE',
       battery_pct: 82,
       odometer_meters: 9350400,
@@ -185,7 +188,7 @@ export default function TvKpiDashboard() {
       charge_cycles: 2890,
       last_sensor_clean_at: new Date(Date.now() - 8 * 86400000).toISOString(),
       last_inspection_passed: true,
-      current_storeroom: 'NEW',
+      current_storeroom: 'TYRE',
       current_lane: 'Lane C',
       current_level: 2,
     },
@@ -260,7 +263,7 @@ export default function TvKpiDashboard() {
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-200 flex flex-col font-sans select-none antialiased">
-      {/* 1. HEADER (CLEAN BMW SUPPLIER AESTHETIC - NO TIER 1 TEXT) */}
+      {/* 1. MINIMAL EXECUTIVE HEADER */}
       <header className="bg-[#0b1329] border-b border-slate-800/80 px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 rounded bg-blue-700 flex items-center justify-center font-bold text-xs text-white tracking-widest">
@@ -382,7 +385,7 @@ export default function TvKpiDashboard() {
                   </div>
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-800">
-                  <span>Loc: <strong className="text-slate-200">Existing Store (J-1)</strong></span>
+                  <span>Loc: <strong className="text-slate-200">Rim Store (J-1)</strong></span>
                   <span>Odo: <strong className="text-slate-200">8,840 km</strong></span>
                 </div>
               </div>
@@ -405,7 +408,7 @@ export default function TvKpiDashboard() {
                   </div>
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-800">
-                  <span>Loc: <strong className="text-slate-200">New Store (C-2)</strong></span>
+                  <span>Loc: <strong className="text-slate-200">Tyre Store (C-2)</strong></span>
                   <span>Odo: <strong className="text-slate-200">9,350 km</strong></span>
                 </div>
               </div>
@@ -449,19 +452,55 @@ export default function TvKpiDashboard() {
               </div>
             </div>
 
-            {/* ROW 2: SIDE-BY-SIDE STOREROOM ELEVATION REPLICATING ENGINEERING PHOTO */}
+            {/* ROW 2: SIDE-BY-SIDE ELEVATION WITH VISIBILITY CONTROLS */}
             <div className="bg-[#0b1329] border border-slate-800/90 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">
-                    FIFO Storage Cavity Elevation (Cross-Sectional View with Pallet Counts)
-                  </h3>
-                  <div className="text-[11px] text-slate-400">
-                    Front-Face Cross Section • 29 Pallets Deep FIFO Channels
+                <div className="flex items-center gap-4">
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">
+                      FIFO Storage Cavity Elevation (Cross-Sectional View)
+                    </h3>
+                    <div className="text-[11px] text-slate-400">
+                      Front-Face Cross Section • 29 Pallets Deep FIFO Channels
+                    </div>
+                  </div>
+
+                  {/* STOREROOM VISIBILITY BUTTONS */}
+                  <div className="flex items-center bg-[#070b14] p-0.5 rounded border border-slate-800 text-[11px] font-mono">
+                    <button
+                      onClick={() => setStoreroomView('BOTH')}
+                      className={`px-2.5 py-1 rounded transition ${
+                        storeroomView === 'BOTH'
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Show Both
+                    </button>
+                    <button
+                      onClick={() => setStoreroomView('RIM')}
+                      className={`px-2.5 py-1 rounded transition ${
+                        storeroomView === 'RIM'
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Rim Storeroom Only
+                    </button>
+                    <button
+                      onClick={() => setStoreroomView('TYRE')}
+                      className={`px-2.5 py-1 rounded transition ${
+                        storeroomView === 'TYRE'
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Tyre Storeroom Only
+                    </button>
                   </div>
                 </div>
 
-                {/* Color Legend matching user instructions */}
+                {/* Color Legend */}
                 <div className="flex items-center gap-4 text-xs font-mono">
                   <div className="flex items-center gap-1.5">
                     <span className="h-3 w-3 rounded bg-[#1e3a8a] border border-blue-500" />
@@ -473,184 +512,197 @@ export default function TvKpiDashboard() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="h-3 w-3 rounded bg-slate-900 border border-slate-700" />
-                    <span className="text-slate-500">Structural Clearance</span>
+                    <span className="text-slate-500">Clearance</span>
                   </div>
                 </div>
               </div>
 
-              {/* Side-by-Side Building Cross-Sections */}
+              {/* DUAL BUILDING CROSS-SECTION GRID */}
               <div className="grid grid-cols-12 gap-4 items-end">
-                {/* 1. LEFT BUILDING: EXISTING RIM STOREROOM (Width 8,730 mm, 3 levels high: 2, 1, 0, Lanes L to G) */}
-                <div className="col-span-6 bg-[#070b14] p-3 rounded-lg border border-slate-800 flex flex-col justify-between">
-                  {/* Building Title & Dimension */}
-                  <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-800 pb-1.5 mb-2">
-                    <span className="text-slate-200 font-semibold">Existing Rim Storeroom</span>
-                    <span className="text-slate-400">Width: 8,730 mm • 3 Levels</span>
-                  </div>
+                {/* 1. LEFT BUILDING: RIM STOREROOM (Width 8,730 mm, 3 levels high: 2, 1, 0, Lanes L to G) */}
+                {(storeroomView === 'BOTH' || storeroomView === 'RIM') && (
+                  <div
+                    className={`${
+                      storeroomView === 'RIM' ? 'col-span-12' : 'col-span-6'
+                    } bg-[#070b14] p-3 rounded-lg border border-slate-800 flex flex-col justify-between transition-all`}
+                  >
+                    {/* Building Title & Dimension */}
+                    <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-800 pb-1.5 mb-2">
+                      <span className="text-slate-200 font-semibold">Rim Storeroom</span>
+                      <span className="text-slate-400">Width: 8,730 mm • 3 Levels (0, 1, 2)</span>
+                    </div>
 
-                  {/* Cavity Grid for Left Building */}
-                  <div className="space-y-1.5">
-                    {[2, 1, 0].map((lvl) => (
-                      <div key={`exist-lvl-${lvl}`} className="flex items-center gap-1.5">
-                        <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
-                          {lvl}
-                        </span>
-                        <div className="grid grid-cols-6 gap-1.5 flex-1">
-                          {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => {
-                            const slot = EXISTING_RIM_CAVITIES.find(
-                              (c) => c.col === col && c.level === lvl
-                            );
+                    {/* Cavity Grid for Rim Storeroom */}
+                    <div className="space-y-1.5">
+                      {[2, 1, 0].map((lvl) => (
+                        <div key={`exist-lvl-${lvl}`} className="flex items-center gap-1.5">
+                          <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
+                            {lvl}
+                          </span>
+                          <div className="grid grid-cols-6 gap-1.5 flex-1">
+                            {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => {
+                              const slot = RIM_STOREROOM_CAVITIES.find(
+                                (c) => c.col === col && c.level === lvl
+                              );
 
-                            if (!slot || slot.type === 'EMPTY') {
+                              if (!slot || slot.type === 'EMPTY') {
+                                return (
+                                  <div
+                                    key={`rim-${col}-${lvl}`}
+                                    className="h-16 rounded border border-dashed border-slate-800/60 bg-slate-950/30 flex items-center justify-center text-[9px] font-mono text-slate-700"
+                                  >
+                                    —
+                                  </div>
+                                );
+                              }
+
+                              const isLarge = slot.type === 'LARGE_RIM';
+
                               return (
                                 <div
-                                  key={`exist-${col}-${lvl}`}
-                                  className="h-16 rounded border border-dashed border-slate-800/60 bg-slate-950/30 flex items-center justify-center text-[9px] font-mono text-slate-700"
+                                  key={`rim-${col}-${lvl}`}
+                                  onClick={() => setSelectedCavity(slot)}
+                                  className={`h-16 rounded p-1.5 flex flex-col justify-between transition cursor-pointer border relative ${
+                                    isLarge
+                                      ? 'bg-[#1e3a8a]/40 border-blue-500/60 hover:bg-[#1e3a8a]/60'
+                                      : 'bg-[#064e3b]/40 border-emerald-500/60 hover:bg-[#064e3b]/60'
+                                  }`}
                                 >
-                                  —
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[8px] font-mono text-slate-400">
+                                      {col}{lvl}
+                                    </span>
+                                    <span
+                                      className={`text-[8px] font-mono px-1 rounded font-bold ${
+                                        slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-300'
+                                      }`}
+                                    >
+                                      {slot.occupied}/{slot.capacity}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-center my-auto">
+                                    <span className="text-[10px] font-mono font-bold text-slate-100 truncate block">
+                                      {slot.partCode}
+                                    </span>
+                                  </div>
+
+                                  {/* Occupancy Indicator Bar */}
+                                  <div className="w-full bg-slate-900/80 h-1 rounded overflow-hidden">
+                                    <div
+                                      className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
+                                      style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
+                                    />
+                                  </div>
                                 </div>
                               );
-                            }
-
-                            const isLarge = slot.type === 'LARGE_RIM';
-
-                            return (
-                              <div
-                                key={`exist-${col}-${lvl}`}
-                                onClick={() => setSelectedCavity(slot)}
-                                className={`h-16 rounded p-1.5 flex flex-col justify-between transition cursor-pointer border relative ${
-                                  isLarge
-                                    ? 'bg-[#1e3a8a]/40 border-blue-500/60 hover:bg-[#1e3a8a]/60'
-                                    : 'bg-[#064e3b]/40 border-emerald-500/60 hover:bg-[#064e3b]/60'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className="text-[8px] font-mono text-slate-400">
-                                    {col}{lvl}
-                                  </span>
-                                  <span
-                                    className={`text-[8px] font-mono px-1 rounded font-bold ${
-                                      slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-300'
-                                    }`}
-                                  >
-                                    {slot.occupied}/{slot.capacity}
-                                  </span>
-                                </div>
-
-                                <div className="text-center my-auto">
-                                  <span className="text-[10px] font-mono font-bold text-slate-100 truncate block">
-                                    {slot.partCode}
-                                  </span>
-                                </div>
-
-                                {/* Mini Occupancy Progress Bar */}
-                                <div className="w-full bg-slate-900/80 h-1 rounded overflow-hidden">
-                                  <div
-                                    className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
-                                    style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Bay Labels L to G */}
-                    <div className="flex items-center gap-1.5 pt-1 border-t border-slate-800">
-                      <span className="w-5 text-center text-[9px] font-mono text-slate-600">Bay</span>
-                      <div className="grid grid-cols-6 gap-1.5 flex-1">
-                        {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => (
-                          <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-300">
-                            {col}
+                            })}
                           </div>
-                        ))}
+                        </div>
+                      ))}
+
+                      {/* Bay Labels L to G */}
+                      <div className="flex items-center gap-1.5 pt-1 border-t border-slate-800">
+                        <span className="w-5 text-center text-[9px] font-mono text-slate-600">Bay</span>
+                        <div className="grid grid-cols-6 gap-1.5 flex-1">
+                          {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => (
+                            <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-300">
+                              {col}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* 2. RIGHT BUILDING: NEW STOREROOM (Width 8,290 mm, Height 7,350 mm, 4 rows tall, Lanes A to E) */}
-                <div className="col-span-6 bg-[#070b14] p-3 rounded-lg border border-slate-800 flex flex-col justify-between">
-                  {/* Building Title & Dimension */}
-                  <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-800 pb-1.5 mb-2">
-                    <span className="text-slate-200 font-semibold">New Storeroom</span>
-                    <span className="text-slate-400">Width: 8,290 mm • Height: 7,350 mm • 4 Rows</span>
-                  </div>
+                {/* 2. RIGHT BUILDING: TYRE STOREROOM (Width 8,290 mm, Height 7,350 mm, 4 rows tall, Lanes NUMBERED RIGHT TO LEFT A-E) */}
+                {(storeroomView === 'BOTH' || storeroomView === 'TYRE') && (
+                  <div
+                    className={`${
+                      storeroomView === 'TYRE' ? 'col-span-12' : 'col-span-6'
+                    } bg-[#070b14] p-3 rounded-lg border border-slate-800 flex flex-col justify-between transition-all`}
+                  >
+                    {/* Building Title & Dimension */}
+                    <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-800 pb-1.5 mb-2">
+                      <span className="text-slate-200 font-semibold">Tyre Storeroom</span>
+                      <span className="text-slate-400">Width: 8,290 mm • Height: 7,350 mm • 4 Rows</span>
+                    </div>
 
-                  {/* Cavity Grid for Right Building (4 Rows tall: 3, 2, 1, 0, Lanes A to E) */}
-                  <div className="space-y-1.5">
-                    {[3, 2, 1, 0].map((lvl) => (
-                      <div key={`new-lvl-${lvl}`} className="flex items-center gap-1.5">
-                        <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
-                          {lvl}
-                        </span>
+                    {/* Cavity Grid for Tyre Storeroom (4 Rows: 3, 2, 1, 0 • Lanes from right to left A-E: E, D, C, B, A) */}
+                    <div className="space-y-1.5">
+                      {[3, 2, 1, 0].map((lvl) => (
+                        <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1.5">
+                          <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
+                            {lvl}
+                          </span>
+                          {/* Lanes ordered right to left: E on the left, A on the far right */}
+                          <div className="grid grid-cols-5 gap-1.5 flex-1">
+                            {(['E', 'D', 'C', 'B', 'A'] as const).map((col) => {
+                              const slot = TYRE_STOREROOM_CAVITIES.find(
+                                (c) => c.col === col && c.level === lvl
+                              );
+
+                              if (!slot) return null;
+                              const isLarge = slot.type === 'LARGE_RIM';
+
+                              return (
+                                <div
+                                  key={`tyre-${col}-${lvl}`}
+                                  onClick={() => setSelectedCavity(slot)}
+                                  className={`h-16 rounded p-1.5 flex flex-col justify-between transition cursor-pointer border relative ${
+                                    isLarge
+                                      ? 'bg-[#1e3a8a]/40 border-blue-500/60 hover:bg-[#1e3a8a]/60'
+                                      : 'bg-[#064e3b]/40 border-emerald-500/60 hover:bg-[#064e3b]/60'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[8px] font-mono text-slate-400">
+                                      {col}{lvl}
+                                    </span>
+                                    <span
+                                      className={`text-[8px] font-mono px-1 rounded font-bold ${
+                                        slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-300'
+                                      }`}
+                                    >
+                                      {slot.occupied}/{slot.capacity}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-center my-auto">
+                                    <span className="text-[10px] font-mono font-bold text-slate-100 truncate block">
+                                      {slot.partCode}
+                                    </span>
+                                  </div>
+
+                                  {/* Occupancy Indicator Bar */}
+                                  <div className="w-full bg-slate-900/80 h-1 rounded overflow-hidden">
+                                    <div
+                                      className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
+                                      style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Bay Labels right to left A-E (Screen: E, D, C, B, A) */}
+                      <div className="flex items-center gap-1.5 pt-1 border-t border-slate-800">
+                        <span className="w-5 text-center text-[9px] font-mono text-slate-600">Bay</span>
                         <div className="grid grid-cols-5 gap-1.5 flex-1">
-                          {(['A', 'B', 'C', 'D', 'E'] as const).map((col) => {
-                            const slot = NEW_STOREROOM_CAVITIES.find(
-                              (c) => c.col === col && c.level === lvl
-                            );
-
-                            if (!slot) return null;
-                            const isLarge = slot.type === 'LARGE_RIM';
-
-                            return (
-                              <div
-                                key={`new-${col}-${lvl}`}
-                                onClick={() => setSelectedCavity(slot)}
-                                className={`h-16 rounded p-1.5 flex flex-col justify-between transition cursor-pointer border relative ${
-                                  isLarge
-                                    ? 'bg-[#1e3a8a]/40 border-blue-500/60 hover:bg-[#1e3a8a]/60'
-                                    : 'bg-[#064e3b]/40 border-emerald-500/60 hover:bg-[#064e3b]/60'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className="text-[8px] font-mono text-slate-400">
-                                    {col}{lvl}
-                                  </span>
-                                  <span
-                                    className={`text-[8px] font-mono px-1 rounded font-bold ${
-                                      slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-300'
-                                    }`}
-                                  >
-                                    {slot.occupied}/{slot.capacity}
-                                  </span>
-                                </div>
-
-                                <div className="text-center my-auto">
-                                  <span className="text-[10px] font-mono font-bold text-slate-100 truncate block">
-                                    {slot.partCode}
-                                  </span>
-                                </div>
-
-                                {/* Mini Occupancy Progress Bar */}
-                                <div className="w-full bg-slate-900/80 h-1 rounded overflow-hidden">
-                                  <div
-                                    className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
-                                    style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
+                          {(['E', 'D', 'C', 'B', 'A'] as const).map((col) => (
+                            <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-300">
+                              {col}
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-
-                    {/* Bay Labels A to E */}
-                    <div className="flex items-center gap-1.5 pt-1 border-t border-slate-800">
-                      <span className="w-5 text-center text-[9px] font-mono text-slate-600">Bay</span>
-                      <div className="grid grid-cols-5 gap-1.5 flex-1">
-                        {(['A', 'B', 'C', 'D', 'E'] as const).map((col) => (
-                          <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-300">
-                            {col}
-                          </div>
-                        ))}
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Selected Cavity Channel Details */}
@@ -659,7 +711,7 @@ export default function TvKpiDashboard() {
                   <div>
                     <span className="text-slate-400">Channel Selected: </span>
                     <strong className="text-slate-200">
-                      {selectedCavity.store === 'EXISTING_RIM' ? 'Existing Rim Store' : 'New Storeroom'} • Bay {selectedCavity.col} • Level {selectedCavity.level} ({selectedCavity.partCode})
+                      {selectedCavity.store === 'RIM_STORE' ? 'Rim Storeroom' : 'Tyre Storeroom'} • Bay {selectedCavity.col} • Level {selectedCavity.level} ({selectedCavity.partCode})
                     </strong>
                     <span className="text-slate-400 ml-2">
                       Type: <strong className={selectedCavity.type === 'LARGE_RIM' ? 'text-blue-400' : 'text-emerald-400'}>
@@ -668,7 +720,7 @@ export default function TvKpiDashboard() {
                     </span>
                   </div>
                   <div className="text-slate-300">
-                    Pallets in Channel: <strong className="text-white font-bold">{selectedCavity.occupied}</strong> / {selectedCavity.capacity} ({Math.round((selectedCavity.occupied / selectedCavity.capacity) * 100)}% FIFO Channel Fill)
+                    Pallets in Channel: <strong className="text-white font-bold">{selectedCavity.occupied}</strong> / {selectedCavity.capacity} ({Math.round((selectedCavity.occupied / selectedCavity.capacity) * 100)}% FIFO Fill)
                   </div>
                 </div>
               )}
@@ -683,7 +735,7 @@ export default function TvKpiDashboard() {
             <div className="bg-[#0b1329] border border-slate-800/90 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                 <span className="text-xs font-semibold text-slate-100">
-                  Shuttle 1 Health Gauges (Existing Rim Store)
+                  Shuttle 1 Health Gauges (Rim Storeroom)
                 </span>
                 <span className="text-[11px] font-mono text-slate-400">SHUTTLE-01</span>
               </div>
@@ -724,7 +776,7 @@ export default function TvKpiDashboard() {
             <div className="bg-[#0b1329] border border-slate-800/90 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                 <span className="text-xs font-semibold text-slate-100">
-                  Shuttle 2 Health Gauges (New Storeroom)
+                  Shuttle 2 Health Gauges (Tyre Storeroom)
                 </span>
                 <button
                   onClick={() => alert('FMEA Matrix: FMEA-SHUTTLE-RACK-004.pdf')}
