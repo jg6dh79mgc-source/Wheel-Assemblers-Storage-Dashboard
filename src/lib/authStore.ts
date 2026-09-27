@@ -5,10 +5,10 @@ import { Operator } from '@/types';
 export const DEFAULT_OPERATORS: (Operator & { password?: string })[] = [
   {
     id: 'user-admin-01',
-    username: 'admin',
-    password: 'password123',
-    name: 'Industrial Systems Lead',
-    employee_id: 'WA-ENG-01',
+    username: 'ADMIN',
+    password: 'WheelAssemblers2026',
+    name: 'Plant Administrator',
+    employee_id: 'WA-ADM-01',
     role: 'ADMIN',
     shift: 'Shift 1 (06:00 - 14:00)',
     active: true,
@@ -16,30 +16,19 @@ export const DEFAULT_OPERATORS: (Operator & { password?: string })[] = [
   },
   {
     id: 'user-op-01',
-    username: 'snkosi',
-    password: 'password123',
-    name: 'Sipho Nkosi',
-    employee_id: 'WA-OP-104',
+    username: 'Operator',
+    password: 'Maintenance',
+    name: 'Shift Operator',
+    employee_id: 'WA-OP-01',
     role: 'OPERATOR',
     shift: 'Shift 1 (06:00 - 14:00)',
     active: true,
     created_at: new Date().toISOString(),
   },
-  {
-    id: 'user-op-02',
-    username: 'jmarais',
-    password: 'password123',
-    name: 'Johan Marais',
-    employee_id: 'WA-OP-108',
-    role: 'OPERATOR',
-    shift: 'Shift 2 (14:00 - 22:00)',
-    active: true,
-    created_at: new Date().toISOString(),
-  },
 ];
 
-const STORAGE_KEY_USERS = 'wa_operators_db_v1';
-const STORAGE_KEY_CURRENT = 'wa_current_user_v1';
+const STORAGE_KEY_USERS = 'wa_operators_db_v2';
+const STORAGE_KEY_CURRENT = 'wa_current_user_v2';
 
 export function getStoredOperators(): (Operator & { password?: string })[] {
   if (typeof window === 'undefined') return DEFAULT_OPERATORS;
@@ -49,7 +38,15 @@ export function getStoredOperators(): (Operator & { password?: string })[] {
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(DEFAULT_OPERATORS));
       return DEFAULT_OPERATORS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    // Ensure the new ADMIN and Operator accounts always exist
+    const hasAdmin = parsed.some((u: any) => u.username?.toUpperCase() === 'ADMIN');
+    const hasOp = parsed.some((u: any) => u.username?.toUpperCase() === 'OPERATOR');
+    if (!hasAdmin || !hasOp) {
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(DEFAULT_OPERATORS));
+      return DEFAULT_OPERATORS;
+    }
+    return parsed;
   } catch {
     return DEFAULT_OPERATORS;
   }
@@ -66,8 +63,8 @@ export function saveOperator(newOp: {
   const current = getStoredOperators();
   const operator: Operator & { password?: string } = {
     id: `op-${Date.now()}`,
-    username: newOp.username.trim().toLowerCase(),
-    password: newOp.password || 'password123',
+    username: newOp.username.trim(),
+    password: newOp.password || 'Maintenance',
     name: newOp.name.trim(),
     employee_id: newOp.employee_id.trim().toUpperCase(),
     role: newOp.role,
