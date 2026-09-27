@@ -157,6 +157,9 @@ export default function TvKpiDashboard() {
   // Emergency Alerts state
   const [isAlertsOpen, setIsAlertsOpen] = useState<boolean>(false);
 
+  // Desktop vs Mobile Layout simulation mode
+  const [adminViewMode, setAdminViewMode] = useState<'DESKTOP' | 'MOBILE'>('DESKTOP');
+
   // Shuttles state (Both in Rim Storeroom)
   const [shuttles, setShuttles] = useState<ShuttleData[]>([
     {
@@ -261,25 +264,37 @@ export default function TvKpiDashboard() {
           </div>
         </div>
 
-        {/* Right Info: Time & Emergency Indicator */}
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="text-slate-400 hidden sm:inline">{currentTime || '08:00:00'}</span>
+        {/* Right Info: View Switcher, Time & Emergency Indicator */}
+        <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+          {/* Desktop vs Mobile Orientation Switcher */}
+          <button
+            onClick={() => setAdminViewMode(adminViewMode === 'DESKTOP' ? 'MOBILE' : 'DESKTOP')}
+            className="px-2.5 py-1 bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded font-mono text-[11px] font-bold transition flex items-center gap-1"
+            title="Toggle Desktop or Mobile orientation preview"
+          >
+            <span className="text-slate-400 hidden xs:inline">VIEW:</span>
+            <span className={adminViewMode === 'MOBILE' ? 'text-white underline' : 'text-blue-200'}>
+              {adminViewMode}
+            </span>
+          </button>
+
+          <span className="text-slate-400 hidden md:inline">{currentTime || '08:00:00'}</span>
 
           {/* Emergency Alert Indicator (Red only for critical items) */}
           <div className="relative">
             <button
               onClick={() => setIsAlertsOpen(!isAlertsOpen)}
-              className={`px-2.5 py-1 rounded text-xs font-mono font-bold border transition ${
+              className={`px-2 py-1 sm:px-2.5 rounded text-xs font-mono font-bold border transition ${
                 emergencyCount > 0
                   ? 'bg-red-900/60 text-red-200 border-red-700 hover:bg-red-900'
                   : 'bg-[#172554] text-blue-200 border-blue-900 hover:bg-[#1e3a8a]'
               }`}
             >
-              {emergencyCount > 0 ? `EMERGENCY ALERTS (${emergencyCount})` : 'STATUS: NORMAL'}
+              {emergencyCount > 0 ? `ALERTS (${emergencyCount})` : 'NORMAL'}
             </button>
 
             {isAlertsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-300 rounded shadow-2xl p-4 z-50 space-y-3 text-xs text-slate-800">
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-300 rounded shadow-2xl p-4 z-50 space-y-3 text-xs text-slate-800">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="font-bold uppercase tracking-wider font-mono text-slate-900 text-[11px]">
                     System Action Dispatches
@@ -332,11 +347,21 @@ export default function TvKpiDashboard() {
       </header>
 
       {/* 2. BODY WITH COLLAPSIBLE SIDE MENU + MAIN VIEWPORT */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile Backdrop when menu is expanded */}
+        {isSidebarOpen && (
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/50 z-30 lg:hidden"
+          />
+        )}
+
         {/* COLLAPSIBLE SIDE MENU */}
         <aside
-          className={`bg-[#0a192f] text-slate-200 border-r border-slate-800 flex flex-col justify-between transition-all duration-300 z-20 shrink-0 ${
-            isSidebarOpen ? 'w-64' : 'w-0 -translate-x-full lg:w-0 lg:-translate-x-full overflow-hidden'
+          className={`bg-[#0a192f] text-slate-200 border-r border-slate-800 flex flex-col justify-between transition-all duration-300 z-40 shrink-0 ${
+            isSidebarOpen
+              ? 'fixed inset-y-0 left-0 w-64 lg:static lg:w-64 shadow-2xl lg:shadow-none'
+              : 'w-0 -translate-x-full lg:w-0 lg:-translate-x-full overflow-hidden'
           }`}
         >
           {isSidebarOpen && (
@@ -438,7 +463,8 @@ export default function TvKpiDashboard() {
         </aside>
 
         {/* MAIN WORKING AREA (LIGHT GREY BACKGROUND) */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        <main className={`flex-1 overflow-y-auto transition-all ${adminViewMode === 'MOBILE' ? 'p-2 sm:p-4 flex justify-center bg-slate-300' : 'p-3 sm:p-5'}`}>
+          <div className={adminViewMode === 'MOBILE' ? 'w-full max-w-sm bg-[#f0f2f5] shadow-2xl rounded border border-slate-400 p-2.5 sm:p-3 space-y-3 min-h-full' : 'space-y-4'}>
           {/* TAB 1: CAVITIES & CROSS SECTION */}
           {activeTab === 'MONITOR' && (
             <>
@@ -547,13 +573,13 @@ export default function TvKpiDashboard() {
               </div>
 
               {/* CROSS-SECTIONAL ELEVATION VIEW */}
-              <div className="bg-white border border-slate-300 p-4 rounded space-y-3">
+              <div className="bg-white border border-slate-300 p-2.5 sm:p-4 rounded space-y-3">
                 <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
-                  <span className="font-bold uppercase tracking-wider text-slate-900">
+                  <span className="font-bold uppercase tracking-wider text-slate-900 text-[11px] sm:text-xs">
                     STORAGE RACKING CROSS-SECTIONAL ELEVATION
                   </span>
 
-                  <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px]">
                     <div className="flex items-center gap-1.5">
                       <span className="h-3 w-3 bg-[#1e3a8a] rounded-sm" />
                       <span>Large Rims</span>
@@ -569,38 +595,38 @@ export default function TvKpiDashboard() {
 
                     <button
                       onClick={() => setShowTyreStore(!showTyreStore)}
-                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-xs transition font-semibold"
+                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[10px] sm:text-xs transition font-semibold"
                     >
-                      {showTyreStore ? 'HIDE TYRE STOREROOM' : 'SHOW TYRE STOREROOM'}
+                      {showTyreStore ? 'HIDE TYRE STORE' : 'SHOW TYRE STORE'}
                     </button>
                   </div>
                 </div>
 
-                {/* Grid Container */}
-                <div className="overflow-x-auto pb-1">
-                  <div className="flex items-start gap-4 min-w-[560px]">
+                {/* Grid Container (Responsive & Stacking on Mobile) */}
+                <div className="w-full overflow-x-auto pb-1">
+                  <div className="flex flex-col lg:flex-row items-stretch gap-3 w-full min-w-[310px]">
                     {/* RIM STOREROOM (Active - Bays L to G) */}
-                    <div className="flex-1 bg-slate-50 p-3.5 border border-slate-300 rounded space-y-2">
-                      <div className="flex justify-between items-center text-xs font-mono border-b border-slate-200 pb-1.5">
+                    <div className="flex-1 bg-slate-50 p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
+                      <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-200 pb-1.5">
                         <span className="font-bold text-slate-900 uppercase">
                           RIM STOREROOM (BAYS L-G, LEVELS 0-2)
                         </span>
-                        <span className="text-[10px] text-blue-900 font-bold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                        <span className="text-[9px] sm:text-[10px] text-blue-900 font-bold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
                           BOTH SHUTTLES ACTIVE IN THIS ROOM
                         </span>
                       </div>
 
                       {[2, 1, 0].map((lvl) => (
-                        <div key={`rim-lvl-${lvl}`} className="flex items-center gap-1.5">
-                          <span className="w-7 text-[10px] font-mono font-bold text-slate-500 text-right pr-1">
+                        <div key={`rim-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
+                          <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5 sm:pr-1">
                             L{lvl}
                           </span>
-                          <div className="grid grid-cols-6 gap-1.5 flex-1">
+                          <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
                             {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
                               const slot = RIM_STOREROOM_CAVITIES.find(
                                 (c) => c.col === col && c.level === lvl
                               );
-                              if (!slot) return <div key={`rim-${col}-${lvl}`} className="h-14" />;
+                              if (!slot) return <div key={`rim-${col}-${lvl}`} className="h-10 sm:h-14" />;
 
                               const isShuttle1 = col === 'J' && lvl === 1;
                               const isShuttle2 = col === 'H' && lvl === 0;
@@ -615,24 +641,24 @@ export default function TvKpiDashboard() {
                               return (
                                 <div
                                   key={`rim-${col}-${lvl}`}
-                                  className={`relative h-14 rounded-sm border p-1 flex flex-col justify-between ${bgClass}`}
+                                  className={`relative h-10 sm:h-14 rounded-sm border p-0.5 sm:p-1 flex flex-col justify-between ${bgClass}`}
                                 >
-                                  <div className="flex justify-between items-center text-[9px] font-mono">
+                                  <div className="flex justify-between items-center text-[8px] sm:text-[9px] font-mono leading-none">
                                     <span className="font-bold">{col}-{lvl}</span>
-                                    <span className="opacity-90">{slot.partCode}</span>
+                                    <span className="opacity-90 truncate max-w-[28px] sm:max-w-none">{slot.partCode}</span>
                                   </div>
 
-                                  <div className="text-center font-mono font-bold text-xs">
+                                  <div className="text-center font-mono font-bold text-[10px] sm:text-xs leading-none">
                                     {slot.occupied}/{slot.capacity}
                                   </div>
 
                                   {isShuttle1 && (
-                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-1 py-0.2 rounded text-[9px] font-mono font-black tracking-tight shadow-sm">
+                                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
                                       SHUTTLE 1
                                     </div>
                                   )}
                                   {isShuttle2 && (
-                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-1 py-0.2 rounded text-[9px] font-mono font-black tracking-tight shadow-sm">
+                                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
                                       SHUTTLE 2
                                     </div>
                                   )}
@@ -644,9 +670,9 @@ export default function TvKpiDashboard() {
                       ))}
 
                       {/* Floor Column Labels */}
-                      <div className="flex items-center gap-1.5 pt-1 text-[10px] font-mono text-slate-600 font-bold text-center">
-                        <span className="w-7 text-right pr-1"></span>
-                        <div className="grid grid-cols-6 gap-1.5 flex-1">
+                      <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-600 font-bold text-center">
+                        <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
+                        <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
                           {['BAY L', 'BAY K', 'BAY J', 'BAY I', 'BAY H', 'BAY G'].map((bay) => (
                             <div key={bay}>{bay}</div>
                           ))}
@@ -656,22 +682,22 @@ export default function TvKpiDashboard() {
 
                     {/* TYRE STOREROOM (Permanently Greyed Out - Bays E to A) */}
                     {showTyreStore && (
-                      <div className="flex-1 bg-slate-100 p-3.5 border border-dashed border-slate-300 rounded space-y-2 opacity-50">
-                        <div className="flex justify-between items-center text-xs font-mono border-b border-slate-300 pb-1.5">
+                      <div className="flex-1 bg-slate-100 p-2 sm:p-3.5 border border-dashed border-slate-300 rounded space-y-2 opacity-50 w-full">
+                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-300 pb-1.5">
                           <span className="font-bold text-slate-600 uppercase">
                             TYRE STOREROOM (BAYS E-A, LEVELS 0-3)
                           </span>
-                          <span className="text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">
+                          <span className="text-[9px] sm:text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">
                             UNCOMMISSIONED
                           </span>
                         </div>
 
                         {[3, 2, 1, 0].map((lvl) => (
-                          <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1.5">
-                            <span className="w-7 text-[10px] font-mono font-bold text-slate-400 text-right pr-1">
+                          <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
+                            <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-400 text-right pr-0.5 sm:pr-1">
                               L{lvl}
                             </span>
-                            <div className="grid grid-cols-5 gap-1.5 flex-1">
+                            <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
                               {['E', 'D', 'C', 'B', 'A'].map((col) => {
                                 const slot = TYRE_STOREROOM_CAVITIES.find(
                                   (c) => c.col === col && c.level === lvl
@@ -679,13 +705,13 @@ export default function TvKpiDashboard() {
                                 return (
                                   <div
                                     key={`tyre-${col}-${lvl}`}
-                                    className="h-11 rounded-sm border border-slate-300 bg-slate-200/60 p-1 flex flex-col justify-between text-slate-500 font-mono text-[9px]"
+                                    className="h-9 sm:h-11 rounded-sm border border-slate-300 bg-slate-200/60 p-0.5 sm:p-1 flex flex-col justify-between text-slate-500 font-mono text-[8px] sm:text-[9px]"
                                   >
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between leading-none">
                                       <span>{col}-{lvl}</span>
-                                      <span>{slot?.partCode}</span>
+                                      <span className="truncate max-w-[24px]">{slot?.partCode}</span>
                                     </div>
-                                    <div className="text-center font-bold">
+                                    <div className="text-center font-bold leading-none">
                                       {slot?.occupied || 0}/29
                                     </div>
                                   </div>
@@ -695,9 +721,9 @@ export default function TvKpiDashboard() {
                           </div>
                         ))}
 
-                        <div className="flex items-center gap-1.5 pt-1 text-[10px] font-mono text-slate-400 font-bold text-center">
-                          <span className="w-7 text-right pr-1"></span>
-                          <div className="grid grid-cols-5 gap-1.5 flex-1">
+                        <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-400 font-bold text-center">
+                          <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
+                          <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
                             {['BAY E', 'BAY D', 'BAY C', 'BAY B', 'BAY A'].map((bay) => (
                               <div key={bay}>{bay}</div>
                             ))}
@@ -883,6 +909,7 @@ export default function TvKpiDashboard() {
               </div>
             </div>
           )}
+          </div>
         </main>
       </div>
 

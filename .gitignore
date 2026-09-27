@@ -6,3 +6,4 @@ out/
 *.log
 .npm/
 uploads/
+tsconfig.tsbuildinfo

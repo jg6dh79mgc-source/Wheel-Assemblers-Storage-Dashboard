@@ -16,7 +16,6 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
     name: '',
     username: '',
     role: 'OPERATOR' as 'OPERATOR' | 'ADMIN' | 'MAINTENANCE_TECH',
-    shift: 'Shift 1 (06:00 - 14:00)' as any,
     password: '',
   });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -51,7 +50,6 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
       name: '',
       username: '',
       role: 'OPERATOR',
-      shift: 'Shift 1 (06:00 - 14:00)',
       password: '',
     });
     setShowAddForm(false);
@@ -147,43 +145,30 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                     className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
                   >
                     <option value="OPERATOR">Floor Operator (FR-7.2-04)</option>
-                    <option value="ADMIN">Lead Admin / Supervisor</option>
                     <option value="MAINTENANCE_TECH">Maintenance Technician</option>
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Operating Shift</label>
-                  <select
-                    value={formData.shift}
-                    onChange={(e) => setFormData({ ...formData, shift: e.target.value as any })}
-                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
-                  >
-                    <option value="Shift 1 (06:00 - 14:00)">Shift 1 (06:00 - 14:00)</option>
-                    <option value="Shift 2 (14:00 - 22:00)">Shift 2 (14:00 - 22:00)</option>
-                    <option value="Shift 3 (22:00 - 06:00)">Shift 3 (22:00 - 06:00)</option>
+                    <option value="ADMIN">Lead Admin / Supervisor</option>
                   </select>
                 </div>
               </div>
               <div className="pt-2 flex justify-end">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded font-medium text-xs transition"
+                  className="px-4 py-2 bg-[#0a192f] hover:bg-[#172554] text-white rounded font-mono text-xs font-bold transition"
                 >
-                  Save & Authorize Operator
+                  Save & Authorize User
                 </button>
               </div>
             </form>
           )}
 
           {/* Operator Table */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto shadow-sm">
-            <table className="w-full text-left text-xs min-w-[480px]">
+          <div className="bg-white rounded border border-slate-300 overflow-x-auto shadow-sm">
+            <table className="w-full text-left text-xs min-w-[420px]">
               <thead className="bg-slate-100 text-slate-700 font-mono border-b border-slate-200 text-[11px]">
                 <tr>
                   <th className="py-2.5 px-3">Name</th>
                   <th className="py-2.5 px-3">Username</th>
                   <th className="py-2.5 px-3">Role</th>
-                  <th className="py-2.5 px-3">Shift</th>
                   <th className="py-2.5 px-3 text-right">Status</th>
                 </tr>
               </thead>
@@ -199,7 +184,6 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                         {op.role}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-slate-600">{op.shift}</td>
                     <td className="py-2.5 px-3 text-right">
                       <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200">
                         Active

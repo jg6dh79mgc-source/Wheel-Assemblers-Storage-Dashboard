@@ -20,8 +20,6 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regName, setRegName] = useState('');
-  const [regRole, setRegRole] = useState<'ADMIN' | 'OPERATOR' | 'MAINTENANCE_TECH'>('ADMIN');
-  const [regShift, setRegShift] = useState<'Shift 1 (06:00 - 14:00)' | 'Shift 2 (14:00 - 22:00)' | 'Shift 3 (22:00 - 06:00)'>('Shift 1 (06:00 - 14:00)');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -32,7 +30,6 @@ export default function LoginPage() {
     if (existing.length === 0) {
       setHasExistingAccounts(false);
       setMode('register');
-      setRegRole('ADMIN');
     } else {
       setHasExistingAccounts(true);
     }
@@ -55,7 +52,7 @@ export default function LoginPage() {
     );
 
     if (!found) {
-      setErrorMsg('Invalid username or password.');
+      setErrorMsg('Invalid credentials. Operator & technician accounts must be provisioned by an Administrator.');
       setIsLoading(false);
       return;
     }
@@ -96,22 +93,17 @@ export default function LoginPage() {
       return;
     }
 
+    // Public registration is restricted to Administrator role only
     const created = saveOperator({
       username: regUsername.trim(),
       password: regPassword,
       name: regName.trim(),
-      role: regRole,
-      shift: regShift,
+      role: 'ADMIN',
     });
 
     setCurrentUser(created);
     setHasExistingAccounts(true);
-
-    if (created.role === 'ADMIN') {
-      router.push('/tv');
-    } else {
-      router.push('/mobile');
-    }
+    router.push('/tv');
   };
 
   return (
@@ -130,7 +122,7 @@ export default function LoginPage() {
         <div className="bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4">
           <div className="border-b border-slate-200 pb-2.5 flex items-center justify-between">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-              {mode === 'login' ? 'System Sign-In' : hasExistingAccounts ? 'Create Account' : 'Initial Setup'}
+              {mode === 'login' ? 'System Sign-In' : hasExistingAccounts ? 'Create Admin Account' : 'Initial Admin Setup'}
             </h2>
             {hasExistingAccounts && (
               <button
@@ -142,14 +134,20 @@ export default function LoginPage() {
                 }}
                 className="text-xs font-mono text-blue-900 hover:underline transition font-semibold"
               >
-                {mode === 'login' ? 'Register Account' : 'Back to Sign-In'}
+                {mode === 'login' ? 'Register Admin' : 'Back to Sign-In'}
               </button>
             )}
           </div>
 
           {!hasExistingAccounts && mode === 'register' && (
-            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs">
+            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs font-mono">
               No accounts registered. Please set up the primary Administrator account.
+            </div>
+          )}
+
+          {hasExistingAccounts && mode === 'register' && (
+            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-950 text-xs font-mono">
+              Self-registration is restricted to Administrators only. Operators and technicians must be provisioned by an Administrator in the Admin Portal.
             </div>
           )}
 
@@ -175,7 +173,7 @@ export default function LoginPage() {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                   autoComplete="username"
                 />
@@ -188,7 +186,7 @@ export default function LoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                   autoComplete="current-password"
                 />
@@ -206,13 +204,13 @@ export default function LoginPage() {
             /* Registration Form */
             <form onSubmit={handleRegister} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Admin Username</label>
                 <input
                   type="text"
-                  placeholder="e.g. jdoe"
+                  placeholder="e.g. admin_lead"
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
@@ -221,39 +219,12 @@ export default function LoginPage() {
                 <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Full Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. System Administrator"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">System Role</label>
-                  <select
-                    value={regRole}
-                    onChange={(e) => setRegRole(e.target.value as any)}
-                    className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 transition"
-                  >
-                    <option value="ADMIN">Administrator (Manager)</option>
-                    <option value="OPERATOR">Operator</option>
-                    <option value="MAINTENANCE_TECH">Maintenance Tech</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Shift</label>
-                  <select
-                    value={regShift}
-                    onChange={(e) => setRegShift(e.target.value as any)}
-                    className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 transition"
-                  >
-                    <option value="Shift 1 (06:00 - 14:00)">Shift 1 (Morning)</option>
-                    <option value="Shift 2 (14:00 - 22:00)">Shift 2 (Afternoon)</option>
-                    <option value="Shift 3 (22:00 - 06:00)">Shift 3 (Night)</option>
-                  </select>
-                </div>
               </div>
 
               <div>
@@ -263,7 +234,7 @@ export default function LoginPage() {
                   placeholder="At least 6 characters"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
@@ -275,7 +246,7 @@ export default function LoginPage() {
                   placeholder="Re-enter password"
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
@@ -284,7 +255,7 @@ export default function LoginPage() {
                 type="submit"
                 className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition mt-1"
               >
-                Create Account & Sign In
+                Create Admin Account & Sign In
               </button>
             </form>
           )}

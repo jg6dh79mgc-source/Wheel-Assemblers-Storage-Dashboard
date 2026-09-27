@@ -21,7 +21,7 @@ export interface Operator {
   username: string;
   name: string;
   role: 'OPERATOR' | 'ADMIN' | 'MAINTENANCE_TECH';
-  shift: 'Shift 1 (06:00 - 14:00)' | 'Shift 2 (14:00 - 22:00)' | 'Shift 3 (22:00 - 06:00)';
+  shift?: string;
   active: boolean;
   created_at: string;
 }
