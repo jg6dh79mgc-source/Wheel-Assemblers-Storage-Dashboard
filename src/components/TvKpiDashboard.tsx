@@ -161,9 +161,9 @@ export default function TvKpiDashboard() {
   // Desktop vs Mobile layout simulator/enforcer
   const [deviceLayoutMode, setDeviceLayoutMode] = useState<'DESKTOP' | 'MOBILE'>('DESKTOP');
 
-  // Storeroom controls (Default focused on Rim Storeroom or Full View)
-  const [storeroomView, setStoreroomView] = useState<'BOTH' | 'RIM' | 'TYRE'>('BOTH');
-  const [isTyreGreyedOut, setIsTyreGreyedOut] = useState<boolean>(true); // Default greyed out as Tyre store is future commissioning
+  // Storeroom controls: Tyre store is permanently greyed out; user can show or hide it
+  const [hideTyreStore, setHideTyreStore] = useState<boolean>(true);
+  const [isAlertsOpen, setIsAlertsOpen] = useState<boolean>(false);
   const [selectedCavity, setSelectedCavity] = useState<CavitySlot | null>(null);
 
   // Both shuttles in RIM STOREROOM as specified
@@ -266,13 +266,15 @@ export default function TvKpiDashboard() {
     );
   });
 
+  const alertCount = (hasInspectionAlert ? 1 : 0) + (hasPmAlert ? 1 : 0);
+
   return (
     <div
       className={`min-h-screen bg-[#0f172a] text-slate-100 flex flex-col font-sans select-none antialiased ${
         deviceLayoutMode === 'MOBILE' ? 'max-w-md mx-auto shadow-2xl border-x border-slate-700' : ''
       }`}
     >
-      {/* 1. CLEAN APP HEADER (WITH DESKTOP / MOBILE SWITCHER) */}
+      {/* 1. CLEAN APP HEADER (WITH DESKTOP / MOBILE SWITCHER & ACTION NOTIFICATION BELL) */}
       <header className="bg-[#1e293b] border-b border-slate-700/80 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between sticky top-0 z-40 shadow-sm gap-2">
         <div className="flex items-center gap-2.5">
           <div className="h-7 w-7 rounded bg-blue-600 flex items-center justify-center font-bold text-xs text-white">
@@ -317,8 +319,98 @@ export default function TvKpiDashboard() {
           </button>
         </div>
 
-        {/* Right Tools (Admin Tools, View Mode Switch, Sign Out) */}
+        {/* Right Tools (Admin Tools, Notification Bell, View Mode Switch, Sign Out) */}
         <div className="flex items-center gap-2 text-xs order-2 sm:order-3">
+          {/* Action Notification Bell (Replaces messy banners) */}
+          <div className="relative">
+            <button
+              onClick={() => setIsAlertsOpen(!isAlertsOpen)}
+              className={`p-1.5 rounded-lg border transition flex items-center justify-center relative ${
+                alertCount > 0
+                  ? 'bg-slate-800 border-amber-500/80 text-amber-400 hover:bg-slate-700'
+                  : 'bg-[#0f172a] border-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              title={alertCount > 0 ? `${alertCount} Pending Actions` : 'All Systems Normal'}
+              aria-label="Pending Actions"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`w-4 h-4 ${alertCount > 0 ? 'animate-pulse' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              {alertCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-amber-500 text-black text-[9px] font-mono font-bold flex items-center justify-center ring-2 ring-[#1e293b]">
+                  {alertCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Popover Dropdown */}
+            {isAlertsOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl p-3.5 z-50 space-y-2.5 text-xs animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-slate-700 pb-2">
+                  <span className="font-semibold text-slate-100 uppercase tracking-wider text-[11px] font-mono">
+                    System Actions ({alertCount})
+                  </span>
+                  <button
+                    onClick={() => setIsAlertsOpen(false)}
+                    className="text-slate-400 hover:text-white text-xs font-mono"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {alertCount === 0 ? (
+                  <div className="py-3 text-center text-slate-400 font-mono text-[11px]">
+                    All shuttles normal. No pending actions.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {hasInspectionAlert && (
+                      <div className="p-2.5 rounded bg-[#0f172a] border border-slate-700 space-y-1.5">
+                        <div className="text-[11px] text-slate-200">
+                          Shuttle 1 pending morning inspection signoff (FR-7.2-04). Interlock active.
+                        </div>
+                        <Link
+                          href="/mobile"
+                          onClick={() => setIsAlertsOpen(false)}
+                          className="inline-block text-[11px] font-mono text-blue-400 hover:text-blue-300 font-semibold"
+                        >
+                          Perform Inspection Sign-Off →
+                        </Link>
+                      </div>
+                    )}
+                    {hasPmAlert && (
+                      <div className="p-2.5 rounded bg-[#0f172a] border border-slate-700 space-y-1.5">
+                        <div className="text-[11px] text-slate-200">
+                          Shuttle 2 scheduled maintenance due (Optical sensor interval exceeded).
+                        </div>
+                        <button
+                          onClick={() => {
+                            setActiveTab('MAINTENANCE');
+                            setIsAlertsOpen(false);
+                          }}
+                          className="text-[11px] font-mono text-blue-400 hover:text-blue-300 font-semibold"
+                        >
+                          Open Maintenance Gauges →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Desktop / Mobile View Switcher */}
           <button
             onClick={() => setDeviceLayoutMode(deviceLayoutMode === 'DESKTOP' ? 'MOBILE' : 'DESKTOP')}
@@ -354,29 +446,7 @@ export default function TvKpiDashboard() {
         </div>
       </header>
 
-      {/* 2. SUBTLE ALERT BAR */}
-      {(hasInspectionAlert || hasPmAlert) && (
-        <div className="px-4 sm:px-6 pt-2 space-y-1">
-          {hasInspectionAlert && (
-            <div className="bg-[#1e293b] border border-amber-500/50 px-3.5 py-1.5 rounded flex items-center justify-between text-xs text-amber-200">
-              <span>Shuttle 1 pending morning inspection signoff (FR-7.2-04). Interlock active.</span>
-              <Link href="/mobile" className="text-amber-300 underline font-mono text-[11px]">
-                Sign Off →
-              </Link>
-            </div>
-          )}
-          {hasPmAlert && (
-            <div className="bg-[#1e293b] border border-slate-600 px-3.5 py-1.5 rounded flex items-center justify-between text-xs text-slate-300">
-              <span>Shuttle 2 scheduled maintenance due (Optical cleaning interval exceeded).</span>
-              <button onClick={() => setActiveTab('MAINTENANCE')} className="text-blue-300 underline font-mono text-[11px]">
-                View →
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 3. MAIN DASHBOARD CONTENT */}
+      {/* 2. MAIN DASHBOARD CONTENT */}
       <main className="flex-1 p-3 sm:p-5 space-y-3.5">
         {activeTab === 'MONITOR' && (
           <>
@@ -434,22 +504,38 @@ export default function TvKpiDashboard() {
                 </div>
               </div>
 
-              {/* Throughput */}
+              {/* Daily Pallet Throughput (Max 120 Inbound / Max 93 Outbound) */}
               <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-3 flex flex-col justify-between">
-                <div className="text-xs font-semibold text-slate-100">Shift Throughput</div>
-                <div className="grid grid-cols-2 gap-2 my-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-semibold text-slate-100">Daily Pallet Throughput</span>
+                  <span className="text-[10px] font-mono text-slate-400">Ceiling: 120 In / 93 Out</span>
+                </div>
+
+                <div className="space-y-2 my-2">
                   <div>
-                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Inbound</span>
-                    <span className="text-lg font-mono font-bold text-white">148</span>
+                    <div className="flex justify-between text-[11px] font-mono">
+                      <span className="text-slate-400">Inbound Received</span>
+                      <span className="text-white font-bold">78 <span className="text-slate-400 font-normal">/ 120 Max</span></span>
+                    </div>
+                    <div className="w-full bg-slate-700 h-1.5 rounded overflow-hidden mt-1">
+                      <div className="bg-blue-500 h-full" style={{ width: `${(78 / 120) * 100}%` }} />
+                    </div>
                   </div>
+
                   <div>
-                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Outbound</span>
-                    <span className="text-lg font-mono font-bold text-white">112</span>
+                    <div className="flex justify-between text-[11px] font-mono">
+                      <span className="text-slate-400">Outbound Shipped</span>
+                      <span className="text-white font-bold">61 <span className="text-slate-400 font-normal">/ 93 Max</span></span>
+                    </div>
+                    <div className="w-full bg-slate-700 h-1.5 rounded overflow-hidden mt-1">
+                      <div className="bg-slate-300 h-full" style={{ width: `${(61 / 93) * 100}%` }} />
+                    </div>
                   </div>
                 </div>
+
                 <div className="text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-700 flex justify-between">
-                  <span>Quota: 280</span>
-                  <span className="text-blue-400 font-semibold">92.8% Pace</span>
+                  <span>Day Usage</span>
+                  <span className="text-blue-300 font-semibold">In: 65% • Out: 66%</span>
                 </div>
               </div>
 
@@ -476,49 +562,17 @@ export default function TvKpiDashboard() {
             {/* ROW 2: CROSS-SECTION VIEW WITH HIGH-VISIBILITY SHUTTLE LOCATION */}
             <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-3.5 space-y-3">
               <div className="flex flex-wrap justify-between items-center border-b border-slate-700 pb-2 gap-2">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                     FIFO Storage Cavity Elevation
                   </h3>
 
-                  {/* View Filters */}
-                  <div className="flex items-center bg-[#0f172a] p-0.5 rounded border border-slate-700 text-[11px] font-mono">
-                    <button
-                      onClick={() => setStoreroomView('BOTH')}
-                      className={`px-2 py-0.5 rounded transition ${
-                        storeroomView === 'BOTH' ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Show Both
-                    </button>
-                    <button
-                      onClick={() => setStoreroomView('RIM')}
-                      className={`px-2 py-0.5 rounded transition ${
-                        storeroomView === 'RIM' ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Rim Store Only
-                    </button>
-                    <button
-                      onClick={() => setStoreroomView('TYRE')}
-                      className={`px-2 py-0.5 rounded transition ${
-                        storeroomView === 'TYRE' ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Tyre Store Only
-                    </button>
-                  </div>
-
-                  {/* Grey-Out Tyre Storeroom Button */}
+                  {/* Single Storeroom Control: Hide or Show Permanently-Greyed Tyre Storeroom */}
                   <button
-                    onClick={() => setIsTyreGreyedOut(!isTyreGreyedOut)}
-                    className={`px-2 py-0.5 rounded border text-[11px] font-mono transition ${
-                      isTyreGreyedOut
-                        ? 'bg-slate-700 text-slate-200 border-slate-500'
-                        : 'bg-[#0f172a] text-slate-400 border-slate-700 hover:text-slate-200'
-                    }`}
+                    onClick={() => setHideTyreStore(!hideTyreStore)}
+                    className="px-2.5 py-1 rounded bg-[#0f172a] hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-mono transition"
                   >
-                    {isTyreGreyedOut ? '✓ Tyre Store Greyed Out' : 'Grey Out Tyre Store'}
+                    {hideTyreStore ? 'Show Tyre Store (Commissioning)' : 'Hide Tyre Store'}
                   </button>
                 </div>
 
@@ -535,150 +589,144 @@ export default function TvKpiDashboard() {
                 </div>
               </div>
 
-              {/* DUAL BUILDING CROSS-SECTION GRID */}
+              {/* CROSS-SECTION GRID */}
               <div className="grid grid-cols-12 gap-3 items-end overflow-x-auto">
                 {/* 1. LEFT BUILDING: RIM STOREROOM (Contains BOTH Shuttle 1 & Shuttle 2) */}
-                {(storeroomView === 'BOTH' || storeroomView === 'RIM') && (
-                  <div
-                    className={`${
-                      storeroomView === 'RIM' ? 'col-span-12' : 'col-span-12 lg:col-span-6'
-                    } bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex flex-col justify-between transition-all`}
-                  >
-                    {/* Header */}
-                    <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-700/80 pb-1.5 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white font-semibold">Rim Storeroom (Active)</span>
-                        <span className="text-[10px] bg-blue-950 text-blue-300 border border-blue-800 px-1.5 rounded">
-                          2 Shuttles On-Site
-                        </span>
-                      </div>
-                      <span className="text-slate-400">Width: 8,730 mm • 3 Levels (0, 1, 2)</span>
+                <div
+                  className={`${
+                    hideTyreStore ? 'col-span-12' : 'col-span-12 lg:col-span-6'
+                  } bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex flex-col justify-between transition-all`}
+                >
+                  {/* Header */}
+                  <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-700/80 pb-1.5 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-semibold">Rim Storeroom (Active)</span>
+                      <span className="text-[10px] bg-blue-950 text-blue-300 border border-blue-800 px-1.5 rounded">
+                        2 Shuttles On-Site
+                      </span>
                     </div>
+                    <span className="text-slate-400">Width: 8,730 mm • 3 Levels (0, 1, 2)</span>
+                  </div>
 
-                    {/* Cavities */}
-                    <div className="space-y-1.5">
-                      {[2, 1, 0].map((lvl) => (
-                        <div key={`exist-lvl-${lvl}`} className="flex items-center gap-1.5">
-                          <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
-                            {lvl}
-                          </span>
-                          <div className="grid grid-cols-6 gap-1.5 flex-1">
-                            {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => {
-                              const slot = RIM_STOREROOM_CAVITIES.find(
-                                (c) => c.col === col && c.level === lvl
-                              );
+                  {/* Cavities */}
+                  <div className="space-y-1.5">
+                    {[2, 1, 0].map((lvl) => (
+                      <div key={`exist-lvl-${lvl}`} className="flex items-center gap-1.5">
+                        <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
+                          {lvl}
+                        </span>
+                        <div className="grid grid-cols-6 gap-1.5 flex-1">
+                          {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => {
+                            const slot = RIM_STOREROOM_CAVITIES.find(
+                              (c) => c.col === col && c.level === lvl
+                            );
 
-                              if (!slot || slot.type === 'EMPTY') {
-                                return (
-                                  <div
-                                    key={`rim-${col}-${lvl}`}
-                                    className="h-16 rounded border border-dashed border-slate-700 bg-slate-900/40 flex items-center justify-center text-[9px] font-mono text-slate-600"
-                                  >
-                                    —
-                                  </div>
-                                );
-                              }
-
-                              const isLarge = slot.type === 'LARGE_RIM';
-
-                              // Check if Shuttle 1 or Shuttle 2 is in this cavity
-                              const isShuttle1 = shuttles[0].current_lane === col && shuttles[0].current_level === lvl;
-                              const isShuttle2 = shuttles[1].current_lane === col && shuttles[1].current_level === lvl;
-
+                            if (!slot || slot.type === 'EMPTY') {
                               return (
                                 <div
                                   key={`rim-${col}-${lvl}`}
-                                  onClick={() => setSelectedCavity(slot)}
-                                  className={`h-16 rounded p-1 flex flex-col justify-between transition cursor-pointer border relative ${
-                                    isShuttle1 || isShuttle2
-                                      ? 'ring-2 ring-amber-400 border-amber-300 shadow-md shadow-amber-500/20 z-10'
-                                      : isLarge
-                                      ? 'bg-blue-950/60 border-blue-500/70 hover:bg-blue-900/70'
-                                      : 'bg-emerald-950/60 border-emerald-500/70 hover:bg-emerald-900/70'
-                                  }`}
+                                  className="h-16 rounded border border-dashed border-slate-700 bg-slate-900/40 flex items-center justify-center text-[9px] font-mono text-slate-600"
                                 >
-                                  {/* High-Visibility Shuttle Badge on top */}
-                                  {isShuttle1 && (
-                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[8px] font-black font-mono px-1 rounded shadow-sm whitespace-nowrap animate-bounce">
-                                      SHUTTLE 1
-                                    </div>
-                                  )}
-                                  {isShuttle2 && (
-                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[8px] font-black font-mono px-1 rounded shadow-sm whitespace-nowrap animate-bounce">
-                                      SHUTTLE 2
-                                    </div>
-                                  )}
-
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-[8px] font-mono text-slate-300 font-semibold">
-                                      {col}{lvl}
-                                    </span>
-                                    <span
-                                      className={`text-[8px] font-mono px-1 rounded font-bold ${
-                                        slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-200'
-                                      }`}
-                                    >
-                                      {slot.occupied}/{slot.capacity}
-                                    </span>
-                                  </div>
-
-                                  <div className="text-center my-auto">
-                                    <span className="text-[10px] font-mono font-bold text-white truncate block">
-                                      {slot.partCode}
-                                    </span>
-                                  </div>
-
-                                  <div className="w-full bg-slate-800 h-1 rounded overflow-hidden">
-                                    <div
-                                      className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
-                                      style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
-                                    />
-                                  </div>
+                                  —
                                 </div>
                               );
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                            }
 
-                      {/* Bay Labels L to G */}
-                      <div className="flex items-center gap-1.5 pt-1 border-t border-slate-700">
-                        <span className="w-5 text-center text-[9px] font-mono text-slate-500">Bay</span>
-                        <div className="grid grid-cols-6 gap-1.5 flex-1">
-                          {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => (
-                            <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-200">
-                              {col}
-                            </div>
-                          ))}
+                            const isLarge = slot.type === 'LARGE_RIM';
+
+                            // Check if Shuttle 1 or Shuttle 2 is in this cavity
+                            const isShuttle1 = shuttles[0].current_lane === col && shuttles[0].current_level === lvl;
+                            const isShuttle2 = shuttles[1].current_lane === col && shuttles[1].current_level === lvl;
+
+                            return (
+                              <div
+                                key={`rim-${col}-${lvl}`}
+                                onClick={() => setSelectedCavity(slot)}
+                                className={`h-16 rounded p-1 flex flex-col justify-between transition cursor-pointer border relative ${
+                                  isShuttle1 || isShuttle2
+                                    ? 'ring-2 ring-amber-400 border-amber-300 shadow-md shadow-amber-500/20 z-10'
+                                    : isLarge
+                                    ? 'bg-blue-950/60 border-blue-500/70 hover:bg-blue-900/70'
+                                    : 'bg-emerald-950/60 border-emerald-500/70 hover:bg-emerald-900/70'
+                                }`}
+                              >
+                                {/* Prominent Shuttle Badges on top (Minimal & Clean) */}
+                                {isShuttle1 && (
+                                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-slate-900 text-amber-300 border border-amber-500/80 text-[8px] font-bold font-mono px-1 rounded shadow-sm whitespace-nowrap">
+                                    SHUTTLE 1
+                                  </div>
+                                )}
+                                {isShuttle2 && (
+                                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-slate-900 text-blue-300 border border-blue-500/80 text-[8px] font-bold font-mono px-1 rounded shadow-sm whitespace-nowrap">
+                                    SHUTTLE 2
+                                  </div>
+                                )}
+
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[8px] font-mono text-slate-300 font-semibold">
+                                    {col}{lvl}
+                                  </span>
+                                  <span
+                                    className={`text-[8px] font-mono px-1 rounded font-bold ${
+                                      slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-200'
+                                    }`}
+                                  >
+                                    {slot.occupied}/{slot.capacity}
+                                  </span>
+                                </div>
+
+                                <div className="text-center my-auto">
+                                  <span className="text-[10px] font-mono font-bold text-white truncate block">
+                                    {slot.partCode}
+                                  </span>
+                                </div>
+
+                                <div className="w-full bg-slate-800 h-1 rounded overflow-hidden">
+                                  <div
+                                    className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
+                                    style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
+                      </div>
+                    ))}
+
+                    {/* Bay Labels L to G */}
+                    <div className="flex items-center gap-1.5 pt-1 border-t border-slate-700">
+                      <span className="w-5 text-center text-[9px] font-mono text-slate-500">Bay</span>
+                      <div className="grid grid-cols-6 gap-1.5 flex-1">
+                        {(['L', 'K', 'J', 'I', 'H', 'G'] as const).map((col) => (
+                          <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-200">
+                            {col}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* 2. RIGHT BUILDING: TYRE STOREROOM (Future Commissioning) */}
-                {(storeroomView === 'BOTH' || storeroomView === 'TYRE') && (
-                  <div
-                    className={`${
-                      storeroomView === 'TYRE' ? 'col-span-12' : 'col-span-12 lg:col-span-6'
-                    } bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex flex-col justify-between transition-all ${
-                      isTyreGreyedOut ? 'opacity-35 grayscale hover:opacity-75 transition duration-300' : ''
-                    }`}
-                  >
+                {/* 2. RIGHT BUILDING: TYRE STOREROOM (Permanently Greyed Out, Commissioning Phase) */}
+                {!hideTyreStore && (
+                  <div className="col-span-12 lg:col-span-6 bg-[#0f172a] p-3 rounded-lg border border-dashed border-slate-700/70 opacity-30 grayscale pointer-events-none select-none flex flex-col justify-between transition-all">
                     {/* Header */}
                     <div className="flex justify-between items-center text-[11px] font-mono border-b border-slate-700/80 pb-1.5 mb-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-white font-semibold">Tyre Storeroom</span>
-                        <span className="text-[9px] bg-slate-700 text-slate-300 px-1 rounded">Future Phase</span>
+                        <span className="text-slate-300 font-semibold">Tyre Storeroom</span>
+                        <span className="text-[9px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 rounded uppercase font-mono">
+                          Commissioning Phase • Inactive
+                        </span>
                       </div>
-                      <span className="text-slate-400">Width: 8,290 mm • 4 Rows</span>
+                      <span className="text-slate-500">Width: 8,290 mm • 4 Rows</span>
                     </div>
 
                     {/* Cavities (Lanes numbered right-to-left A-E: E, D, C, B, A) */}
                     <div className="space-y-1.5">
                       {[3, 2, 1, 0].map((lvl) => (
                         <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1.5">
-                          <span className="w-5 text-center text-xs font-mono font-bold text-slate-400 shrink-0">
+                          <span className="w-5 text-center text-xs font-mono font-bold text-slate-500 shrink-0">
                             {lvl}
                           </span>
                           <div className="grid grid-cols-5 gap-1.5 flex-1">
@@ -693,35 +741,26 @@ export default function TvKpiDashboard() {
                               return (
                                 <div
                                   key={`tyre-${col}-${lvl}`}
-                                  onClick={() => setSelectedCavity(slot)}
-                                  className={`h-16 rounded p-1 flex flex-col justify-between transition cursor-pointer border relative ${
-                                    isLarge
-                                      ? 'bg-blue-950/60 border-blue-500/70 hover:bg-blue-900/70'
-                                      : 'bg-emerald-950/60 border-emerald-500/70 hover:bg-emerald-900/70'
-                                  }`}
+                                  className="h-16 rounded p-1 flex flex-col justify-between border border-slate-700 bg-slate-800/40 relative"
                                 >
                                   <div className="flex justify-between items-center">
-                                    <span className="text-[8px] font-mono text-slate-300 font-semibold">
+                                    <span className="text-[8px] font-mono text-slate-400">
                                       {col}{lvl}
                                     </span>
-                                    <span
-                                      className={`text-[8px] font-mono px-1 rounded font-bold ${
-                                        slot.occupied >= 28 ? 'text-amber-300' : 'text-slate-200'
-                                      }`}
-                                    >
+                                    <span className="text-[8px] font-mono text-slate-500">
                                       {slot.occupied}/{slot.capacity}
                                     </span>
                                   </div>
 
                                   <div className="text-center my-auto">
-                                    <span className="text-[10px] font-mono font-bold text-white truncate block">
+                                    <span className="text-[10px] font-mono font-bold text-slate-400 truncate block">
                                       {slot.partCode}
                                     </span>
                                   </div>
 
                                   <div className="w-full bg-slate-800 h-1 rounded overflow-hidden">
                                     <div
-                                      className={`h-full ${isLarge ? 'bg-blue-400' : 'bg-emerald-400'}`}
+                                      className="h-full bg-slate-600"
                                       style={{ width: `${(slot.occupied / slot.capacity) * 100}%` }}
                                     />
                                   </div>
@@ -737,7 +776,7 @@ export default function TvKpiDashboard() {
                         <span className="w-5 text-center text-[9px] font-mono text-slate-500">Bay</span>
                         <div className="grid grid-cols-5 gap-1.5 flex-1">
                           {(['E', 'D', 'C', 'B', 'A'] as const).map((col) => (
-                            <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-200">
+                            <div key={col} className="text-center text-[10px] font-mono font-bold text-slate-400">
                               {col}
                             </div>
                           ))}
