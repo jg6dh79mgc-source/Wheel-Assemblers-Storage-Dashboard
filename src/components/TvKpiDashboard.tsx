@@ -85,45 +85,45 @@ interface CavitySlot {
 // Rim Storeroom (Bays L to G, Levels 0 to 2) - 16 Storage Lanes, Total Capacity: 464 Pallets (29 per lane)
 // Configured to 75.0% Occupancy (348 Pallets / 4 Days of Stock Buffer)
 const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
-  // Level 2 (Top)
-  { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 26, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: '5A6F119', occupied: 24, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: '5A90F90', occupied: 25, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
+  // Level 2 (Top) - Stepped Roofline: L-2 and G-2 are open/empty
+  { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 0 },
+  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 16, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 18, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 18, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 25, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 0 },
 
   // Level 1 (Middle)
-  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: '5A6F117/118', occupied: 25, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19de0', occupied: 26, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: '5A90F91', occupied: 28, capacity: 29 }, // Shuttle 1
-  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: '5A6F112/113', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 29, capacity: 29 },
-  { store: 'RIM_STORE', col: 'G', level: 1, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 16, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 18, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 20, capacity: 29 }, // Shuttle 1
+  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 23, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 21, capacity: 29 },
 
   // Level 0 (Ground)
-  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: '5A6F120', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: '5A6F114', occupied: 26, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 28, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 0, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 29, capacity: 29 }, // Shuttle 2
-  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: '5A6F113', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 20, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 20, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 }, // Shuttle 2
+  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 24, capacity: 29 },
 ];
 
 // Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound, Rounded Up to Integers)
 // Note: 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per operational directive
 const ACTIVE_CROSS_SECTION_SKUS = [
-  { code: '5a19de0-01', short: '5a19de0', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'K-1' },
-  { code: '5A6F100-01', short: '5A6F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 34, dispatch: 34, buffer4d: 136, bays: 'H-0, J-0, H-1, K-2' },
-  { code: '5A6F114-01', short: '5A6F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 3, dispatch: 3, buffer4d: 12, bays: 'K-0' },
-  { code: '5A90F90-01', short: '5A90F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'I-2' },
-  { code: '5A90F91-01', short: '5A90F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'J-1' },
-  { code: '5A6F112-01', short: '5A6F112', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'I-1' },
-  { code: '5A6F113-01', short: '5A6F113', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'G-0, I-1' },
-  { code: '5A6F117-01', short: '5A6F117', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
-  { code: '5A6F118-01', short: '5A6F118', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
-  { code: '5A6F119-01', short: '5A6F119', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'J-2' },
-  { code: '5A6F120-01', short: '5A6F120', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'L-0' },
+  { code: '5a19de0-01', short: '5a19d', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'K-1' },
+  { code: '5A6F100-01', short: 'F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 34, dispatch: 34, buffer4d: 136, bays: 'H-2, H-1, J-0, I-0, H-0' },
+  { code: '5A6F114-01', short: 'F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 3, dispatch: 3, buffer4d: 12, bays: 'K-0' },
+  { code: '5A90F90-01', short: 'F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'I-2' },
+  { code: '5A90F91-01', short: 'F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'J-1' },
+  { code: '5A6F112-01', short: 'F112', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'G-1, I-1' },
+  { code: '5A6F113-01', short: 'F113', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'G-0, I-1' },
+  { code: '5A6F117-01', short: 'F117', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
+  { code: '5A6F118-01', short: 'F118', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
+  { code: '5A6F119-01', short: 'F119', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'J-2' },
+  { code: '5A6F120-01', short: 'F120', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'L-0' },
 ];
 
 // Tyre Storeroom (Permanently Greyed Out, Bays E to A, Levels 0 to 3)
@@ -576,118 +576,94 @@ export default function TvKpiDashboard() {
                     </div>
                   </div>
 
-                  {/* 3. Storeroom Level Summary Card */}
-                  <div className="bg-white border border-slate-300 p-3 rounded space-y-2.5 shadow-xs">
+                  {/* 3. Cross-Sectional Elevation Rack (Exact Engineering Schematic) */}
+                  <div className="bg-white border border-slate-300 p-2.5 sm:p-3 rounded space-y-2 shadow-xs">
                     <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 text-xs font-mono">
-                      <span className="font-bold text-slate-900 uppercase">STOREROOM LEVEL SUMMARY</span>
-                      <span className="text-[10px] text-blue-900 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                        348 PALLETS (75% FULL)
+                      <span className="font-bold text-slate-900 uppercase">
+                        RACK CROSS-SECTIONAL ELEVATION
+                      </span>
+                      <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                        348 / 464 PALLETS (75% FULL)
                       </span>
                     </div>
 
-                    {/* Level 2 Card */}
-                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
-                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
-                        <span>LEVEL 2 (TOP DECK)</span>
-                        <span className="text-slate-600">75 / 87 Pallets (86%)</span>
+                    {/* Legend matching Engineering Schematic */}
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono pb-1 border-b border-slate-100">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 bg-[#dcfce7] border border-[#16a34a] rounded-xs" />
+                        <span className="text-slate-700 font-semibold">Small Rim</span>
                       </div>
-                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-2: 26/29 (5A6F100)</span>
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay J-2: 24/29 (5A6F119)</span>
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay I-2: 25/29 (5A90F90)</span>
-                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">L-2, H-2, G-2: Empty</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 bg-[#ffedd5] border border-[#ea580c] rounded-xs" />
+                        <span className="text-slate-700 font-semibold">Large Rim</span>
                       </div>
-                    </div>
-
-                    {/* Level 1 Card */}
-                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
-                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
-                        <span className="flex items-center gap-1.5">
-                          LEVEL 1 (MID DECK)
-                          <span className="text-[8px] bg-white text-blue-900 border border-blue-400 px-1 rounded font-bold">SHUTTLE 1 AT J-1</span>
-                        </span>
-                        <span className="text-slate-600">135 / 145 Pallets (93%)</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay L-1: 25/29 (F117/118)</span>
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-1: 26/29 (5a19de0)</span>
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay J-1: 28/29 (5A90F91)</span>
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay I-1: 27/29 (F112/113)</span>
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay H-1: 29/29 (5A6F100)</span>
-                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">G-1: Empty</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 bg-white border border-dashed border-slate-300 rounded-xs" />
+                        <span className="text-slate-400">Stepped Roof Void</span>
                       </div>
                     </div>
 
-                    {/* Level 0 Card */}
-                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
-                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
-                        <span className="flex items-center gap-1.5">
-                          LEVEL 0 (GROUND DECK)
-                          <span className="text-[8px] bg-white text-blue-900 border border-blue-400 px-1 rounded font-bold">SHUTTLE 2 AT H-0</span>
-                        </span>
-                        <span className="text-slate-600">138 / 145 Pallets (95%)</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay L-0: 27/29 (5A6F120)</span>
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-0: 26/29 (5A6F114)</span>
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay J-0: 28/29 (5A6F100)</span>
-                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay H-0: 29/29 (5A6F100)</span>
-                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay G-0: 28/29 (5A6F113)</span>
-                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">I-0: Empty</span>
-                      </div>
-                    </div>
+                    {/* Visual 16-Cavity Stepped Profile */}
+                    <div className="overflow-x-auto pb-1">
+                      <div className="min-w-[460px] space-y-1.5">
+                        {[2, 1, 0].map((lvl) => (
+                          <div key={`m-grid-lvl-${lvl}`} className="flex items-center gap-1.5">
+                            <span className="w-6 text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5">
+                              L{lvl}
+                            </span>
+                            <div className="grid grid-cols-6 gap-1.5 flex-1">
+                              {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
+                                const slot = RIM_STOREROOM_CAVITIES.find((c) => c.col === col && c.level === lvl);
+                                if (!slot || slot.capacity === 0) {
+                                  return <div key={`m-void-${col}-${lvl}`} className="h-12 invisible pointer-events-none" />;
+                                }
+                                const isShuttle1 = col === 'J' && lvl === 1;
+                                const isShuttle2 = col === 'H' && lvl === 0;
+                                const isSmall = slot.type === 'SMALL_RIM';
+                                const bgClass = isSmall
+                                  ? 'bg-[#dcfce7] border-[#16a34a] text-[#14532d]'
+                                  : 'bg-[#ffedd5] border-[#ea580c] text-[#7c2d12]';
 
-                    {/* Button to view horizontal scrollable visual rack */}
-                    <button
-                      onClick={() => setMobileShowElevationGrid(!mobileShowElevationGrid)}
-                      className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[11px] font-mono transition text-center font-semibold"
-                    >
-                      {mobileShowElevationGrid ? '▲ Collapse Graphical Bay Grid' : '▼ View Horizontally Scrollable Bay Grid'}
-                    </button>
-
-                    {mobileShowElevationGrid && (
-                      <div className="overflow-x-auto pt-2 border-t border-slate-200">
-                        <div className="min-w-[480px] space-y-1.5">
-                          {[2, 1, 0].map((lvl) => (
-                            <div key={`m-lvl-${lvl}`} className="flex items-center gap-1">
-                              <span className="w-6 text-[9px] font-mono font-bold text-slate-500 text-right pr-0.5">L{lvl}</span>
-                              <div className="grid grid-cols-6 gap-1 flex-1">
-                                {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
-                                  const slot = RIM_STOREROOM_CAVITIES.find((c) => c.col === col && c.level === lvl);
-                                  if (!slot) return <div key={`m-${col}-${lvl}`} className="h-10" />;
-                                  const isShuttle1 = col === 'J' && lvl === 1;
-                                  const isShuttle2 = col === 'H' && lvl === 0;
-                                  let bgClass = 'bg-slate-100 border-slate-300 text-slate-400';
-                                  if (slot.type === 'LARGE_RIM') bgClass = 'bg-[#1e3a8a] text-white';
-                                  else if (slot.type === 'SMALL_RIM') bgClass = 'bg-[#bfdbfe] border-blue-300 text-blue-950 font-bold';
-                                  return (
-                                    <div key={`m-${col}-${lvl}`} className={`relative h-11 rounded-xs border p-0.5 flex flex-col justify-between ${bgClass}`}>
-                                      <div className="flex justify-between text-[8px] font-mono leading-none">
-                                        <span className="font-bold">{col}-{lvl}</span>
-                                        <span className="opacity-90 truncate max-w-[32px]">{slot.partCode}</span>
-                                      </div>
-                                      <div className="text-center font-mono font-bold text-[10px] leading-none">
-                                        {slot.occupied}/{slot.capacity}
-                                      </div>
-                                      {isShuttle1 && (
-                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
-                                          S1
-                                        </div>
-                                      )}
-                                      {isShuttle2 && (
-                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
-                                          S2
-                                        </div>
-                                      )}
+                                return (
+                                  <div
+                                    key={`m-slot-${col}-${lvl}`}
+                                    className={`relative h-12 rounded-sm border p-1 flex flex-col justify-between shadow-2xs ${bgClass}`}
+                                  >
+                                    <div className="flex justify-between items-center text-[9px] font-mono leading-none">
+                                      <span className="font-bold">{col}-{lvl}</span>
+                                      <span className="font-bold truncate max-w-[44px]">{slot.partCode}</span>
                                     </div>
-                                  );
-                                })}
-                              </div>
+                                    <div className="text-center font-mono font-bold text-xs leading-none">
+                                      {slot.occupied}/{slot.capacity}
+                                    </div>
+                                    {isShuttle1 && (
+                                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-500 px-1 py-0.2 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
+                                        SHUTTLE 1
+                                      </div>
+                                    )}
+                                    {isShuttle2 && (
+                                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-500 px-1 py-0.2 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
+                                        SHUTTLE 2
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ))}
+                          </div>
+                        ))}
+
+                        {/* Floor Column Labels */}
+                        <div className="flex items-center gap-1.5 pt-1 text-[9px] font-mono text-slate-600 font-bold text-center">
+                          <span className="w-6 text-right pr-0.5"></span>
+                          <div className="grid grid-cols-6 gap-1.5 flex-1">
+                            {['BAY L', 'BAY K', 'BAY J', 'BAY I', 'BAY H', 'BAY G'].map((bay) => (
+                              <div key={`m-col-${bay}`}>{bay}</div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* 4. Active Daily SKU Movement (Mobile Touch Cards) */}
@@ -891,16 +867,16 @@ export default function TvKpiDashboard() {
                       </span>
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px]">
                         <div className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 bg-[#1e3a8a] rounded-sm" />
-                          <span>Large Rims</span>
+                          <span className="h-3 w-3 bg-[#dcfce7] border border-[#16a34a] rounded-sm" />
+                          <span className="font-semibold text-slate-700">Small Rims</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 bg-[#bfdbfe] border border-blue-300 rounded-sm" />
-                          <span>Small Rims</span>
+                          <span className="h-3 w-3 bg-[#ffedd5] border border-[#ea580c] rounded-sm" />
+                          <span className="font-semibold text-slate-700">Large Rims</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 bg-slate-100 border border-slate-300 rounded-sm" />
-                          <span>Empty Cavity</span>
+                          <span className="h-3 w-3 bg-white border border-dashed border-slate-300 rounded-sm" />
+                          <span className="text-slate-400">Stepped Roof Void</span>
                         </div>
                         <button
                           onClick={() => setShowTyreStore(!showTyreStore)}
@@ -935,17 +911,17 @@ export default function TvKpiDashboard() {
                                 const slot = RIM_STOREROOM_CAVITIES.find(
                                   (c) => c.col === col && c.level === lvl
                                 );
-                                if (!slot) return <div key={`rim-${col}-${lvl}`} className="h-10 sm:h-14" />;
+                                if (!slot || slot.capacity === 0) {
+                                  return <div key={`rim-${col}-${lvl}`} className="h-10 sm:h-14 invisible pointer-events-none" />;
+                                }
 
                                 const isShuttle1 = col === 'J' && lvl === 1;
                                 const isShuttle2 = col === 'H' && lvl === 0;
 
-                                let bgClass = 'bg-slate-100 border-slate-300 text-slate-400';
-                                if (slot.type === 'LARGE_RIM') {
-                                  bgClass = 'bg-[#1e3a8a] border-[#0f172a] text-white';
-                                } else if (slot.type === 'SMALL_RIM') {
-                                  bgClass = 'bg-[#bfdbfe] border-blue-300 text-blue-950 font-bold';
-                                }
+                                const isSmall = slot.type === 'SMALL_RIM';
+                                const bgClass = isSmall
+                                  ? 'bg-[#dcfce7] border-[#16a34a] text-[#14532d]'
+                                  : 'bg-[#ffedd5] border-[#ea580c] text-[#7c2d12]';
 
                                 return (
                                   <div
