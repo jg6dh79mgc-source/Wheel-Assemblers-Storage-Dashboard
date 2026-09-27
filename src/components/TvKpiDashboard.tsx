@@ -142,7 +142,7 @@ export default function TvKpiDashboard() {
   // Collapsible Side Menu State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Active Main Section View (OEE removed per operational request)
+  // Active Main Section View
   const [activeTab, setActiveTab] = useState<'MONITOR' | 'MAINTENANCE'>('MONITOR');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [showTyreStore, setShowTyreStore] = useState<boolean>(false);

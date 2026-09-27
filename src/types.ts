@@ -48,12 +48,3 @@ export interface MaintenanceGauges {
   pm_due_within_24h: boolean;
   inspection_missing_alert: boolean;
 }
-
-export interface OeeMetric {
-  availability_pct: number;
-  performance_pct: number;
-  quality_pct: number;
-  overall_oee_pct: number;
-  actual_cycle_time_seconds: number;
-  takt_time_seconds: number;
-}
