@@ -92,12 +92,9 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
             <span>REGISTERED BY: <strong className="text-slate-800">{document.uploaded_by}</strong></span>
           </div>
 
-          <button
-            onClick={onClose}
-            className="px-3.5 py-1 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-mono font-bold transition"
-          >
-            Close Viewer
-          </button>
+          <div className="text-[11px] text-slate-400 font-mono">
+            {isZoomed ? 'Zoomed: Pan or click 100% to reset' : 'Full Page Fit'}
+          </div>
         </div>
       </div>
     </div>

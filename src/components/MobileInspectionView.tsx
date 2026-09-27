@@ -558,13 +558,6 @@ export default function MobileInspectionView() {
                 ))}
               </div>
             </div>
-
-            <button
-              onClick={() => setIsSopDrawerOpen(false)}
-              className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-mono text-xs font-bold transition mt-4"
-            >
-              Close Drawer
-            </button>
           </div>
         </div>
       )}

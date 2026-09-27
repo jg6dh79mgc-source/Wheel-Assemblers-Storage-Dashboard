@@ -48,6 +48,20 @@ export function saveOperator(newOp: {
   return operator;
 }
 
+export function deleteStoredOperator(idOrUsername: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const current = getStoredOperators();
+    const updated = current.filter(
+      (u) => u.id !== idOrUsername && u.username.toLowerCase() !== idOrUsername.toLowerCase()
+    );
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getCurrentUser(): Operator | null {
   if (typeof window === 'undefined') return null;
   try {

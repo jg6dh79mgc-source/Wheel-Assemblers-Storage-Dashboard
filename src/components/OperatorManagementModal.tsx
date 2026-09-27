@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getStoredOperators, saveOperator } from '@/lib/authStore';
+import { getStoredOperators, saveOperator, deleteStoredOperator, getCurrentUser } from '@/lib/authStore';
+import { supabase } from '@/lib/supabaseClient';
 import { Operator } from '@/types';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 export default function OperatorManagementModal({ isOpen, onClose }: Props) {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Operator | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -23,6 +25,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (isOpen) {
       setOperators(getStoredOperators());
+      setCurrentUser(getCurrentUser());
       setShowAddForm(false);
       setMessage(null);
     }
@@ -55,10 +58,33 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
     setShowAddForm(false);
   };
 
+  const handleDeleteOperator = async (op: Operator) => {
+    if (currentUser && currentUser.username.toLowerCase() === op.username.toLowerCase()) {
+      setMessage({ type: 'error', text: 'Action prohibited: You cannot delete your own active Admin account.' });
+      return;
+    }
+
+    const confirmed = window.confirm(`Permanently remove operator "${op.name}" (@${op.username}) from access?`);
+    if (!confirmed) return;
+
+    deleteStoredOperator(op.id);
+
+    try {
+      if (supabase) {
+        await supabase.from('operators').delete().eq('id', op.id);
+      }
+    } catch {
+      // Continue even if remote Supabase record was not found
+    }
+
+    setOperators(getStoredOperators());
+    setMessage({ type: 'success', text: `Operator ${op.name} (@${op.username}) has been removed.` });
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 select-none font-sans">
       <div className="bg-white border border-slate-300 sm:rounded w-full max-w-2xl h-full sm:h-auto sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden text-slate-800">
-        {/* Header */}
+        {/* Header - Single Close Button */}
         <div className="px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between bg-[#0a192f] text-white">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">ADMIN ACCESS</span>
@@ -161,50 +187,67 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
             </form>
           )}
 
-          {/* Operator Table */}
+          {/* Operator Table with Delete Option */}
           <div className="bg-white rounded border border-slate-300 overflow-x-auto shadow-sm">
-            <table className="w-full text-left text-xs min-w-[420px]">
+            <table className="w-full text-left text-xs min-w-[460px]">
               <thead className="bg-slate-100 text-slate-700 font-mono border-b border-slate-200 text-[11px]">
                 <tr>
                   <th className="py-2.5 px-3">Name</th>
                   <th className="py-2.5 px-3">Username</th>
                   <th className="py-2.5 px-3">Role</th>
-                  <th className="py-2.5 px-3 text-right">Status</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 font-sans">
-                {operators.map((op) => (
-                  <tr key={op.id} className="hover:bg-slate-50 transition">
-                    <td className="py-2.5 px-3 font-semibold text-slate-900">{op.name}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-600">
-                      <div>@{op.username}</div>
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-blue-50 text-blue-900 border border-blue-200">
-                        {op.role}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {operators.map((op) => {
+                  const isCurrent = currentUser && currentUser.username.toLowerCase() === op.username.toLowerCase();
+                  return (
+                    <tr key={op.id} className="hover:bg-slate-50 transition">
+                      <td className="py-2.5 px-3 font-semibold text-slate-900">
+                        {op.name}
+                        {isCurrent && <span className="ml-1.5 text-[9px] font-mono text-blue-900 bg-blue-50 px-1 py-0.2 rounded border border-blue-200">You</span>}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-slate-600">
+                        <div>@{op.username}</div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-blue-50 text-blue-900 border border-blue-200">
+                          {op.role}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                          Active
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOperator(op)}
+                          disabled={isCurrent}
+                          className={`px-2.5 py-1 rounded text-[11px] font-mono font-semibold transition border ${
+                            isCurrent
+                              ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                              : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-300'
+                          }`}
+                          title={isCurrent ? 'Cannot delete current logged-in user' : `Delete operator ${op.username}`}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer (No duplicate Close button) */}
         <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-t border-slate-200 bg-white flex justify-between items-center text-xs text-slate-500 font-mono">
           <span className="text-[11px]">Local & Database Auth Synchronized</span>
-          <button
-            onClick={onClose}
-            className="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded transition text-xs font-medium"
-          >
-            Close
-          </button>
+          <span className="text-[11px] text-slate-400">Total Personnel: {operators.length}</span>
         </div>
       </div>
     </div>

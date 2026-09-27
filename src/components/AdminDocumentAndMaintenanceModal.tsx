@@ -438,14 +438,10 @@ export default function AdminDocumentAndMaintenanceModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-2.5 border-t border-slate-200 bg-white flex justify-end text-xs">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 rounded text-slate-800 font-medium transition"
-          >
-            Close
-          </button>
+        {/* Footer (No duplicate Close button) */}
+        <div className="px-5 py-2.5 border-t border-slate-200 bg-white flex justify-between items-center text-xs font-mono text-slate-500">
+          <span>Storage Document Control System</span>
+          <span className="text-[11px] text-slate-400">Total Documents: {documents.length}</span>
         </div>
       </div>
 

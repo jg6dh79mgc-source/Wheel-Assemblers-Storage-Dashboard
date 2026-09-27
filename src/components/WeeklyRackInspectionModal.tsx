@@ -698,12 +698,6 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={onClose}
-              className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium text-xs transition"
-            >
-              Cancel
-            </button>
-            <button
               onClick={handleSignOff}
               className="px-5 py-2 rounded bg-[#1e3a8a] hover:bg-blue-900 text-white font-medium text-xs transition shadow-sm"
             >
