@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getStoredDocuments, saveDocument, DocumentItem } from '@/lib/documentStore';
 import { getStoredMaintenanceTasks, saveMaintenanceTask, MaintenanceTask } from '@/lib/maintenanceStore';
+import DigitalSopViewerModal from './DigitalSopViewerModal';
 
 interface Props {
   isOpen: boolean;
@@ -37,6 +38,14 @@ export default function AdminDocumentAndMaintenanceModal({
   const [maintInstructions, setMaintInstructions] = useState('');
 
   const [notification, setNotification] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDocuments(getStoredDocuments());
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -55,6 +64,7 @@ export default function AdminDocumentAndMaintenanceModal({
       description: docDesc.trim(),
     });
 
+    setDocuments(getStoredDocuments());
     setNotification(`Successfully uploaded ${docType} document: ${docCode}`);
     setDocCode('');
     setDocTitle('');
@@ -222,6 +232,47 @@ export default function AdminDocumentAndMaintenanceModal({
                   Upload Document
                 </button>
               </div>
+
+              {/* Registered Documents List with Previews */}
+              <div className="pt-4 border-t border-slate-700/80 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-200 uppercase tracking-wider font-mono text-[11px]">
+                    Active Digital SOPs & FMEA ISO Library ({documents.length})
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Instant Operator Mobile Availability
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex flex-wrap justify-between items-center gap-2"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-bold text-blue-400 bg-blue-950 px-1.5 py-0.5 rounded border border-blue-800">
+                            {doc.code}
+                          </span>
+                          <span className="font-bold text-white text-xs">{doc.title}</span>
+                          <span className="text-[9px] text-slate-400 font-mono">({doc.version})</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{doc.description}</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDoc(doc)}
+                        className="px-2.5 py-1 bg-blue-600/80 hover:bg-blue-500 text-white rounded font-mono text-[11px] transition flex items-center gap-1 shrink-0"
+                      >
+                        <span>⚡</span>
+                        <span>Interactive & Sheet Preview</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </form>
           )}
 
@@ -330,6 +381,13 @@ export default function AdminDocumentAndMaintenanceModal({
           </button>
         </div>
       </div>
+
+      {/* Digital SOP & High-Res Document Preview Modal */}
+      <DigitalSopViewerModal
+        document={previewDoc}
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+      />
     </div>
   );
 }

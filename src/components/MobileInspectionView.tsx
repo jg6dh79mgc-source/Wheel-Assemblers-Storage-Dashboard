@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabaseClient';
 import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
 import { getStoredDocuments, DocumentItem } from '@/lib/documentStore';
 import { getStoredMaintenanceTasks, updateMaintenanceTaskStatus, MaintenanceTask } from '@/lib/maintenanceStore';
+import DigitalSopViewerModal from './DigitalSopViewerModal';
+import WeeklyRackInspectionModal from './WeeklyRackInspectionModal';
 
 export const CHECKLIST_QUESTIONS: { id: number; text: string }[] = [
   { id: 1, text: 'Is the remote clean?' },
@@ -34,7 +36,7 @@ export const CHECKLIST_QUESTIONS: { id: number; text: string }[] = [
 
 export default function MobileInspectionView() {
   const router = useRouter();
-  const [operatorTab, setOperatorTab] = useState<'INSPECTION' | 'MAINTENANCE_MATRIX'>('INSPECTION');
+  const [operatorTab, setOperatorTab] = useState<'INSPECTION' | 'WEEKLY_RACK' | 'MAINTENANCE_MATRIX'>('INSPECTION');
 
   // Shuttles - Both active in Rim Storeroom
   const [shuttles, setShuttles] = useState<any[]>([
@@ -52,6 +54,8 @@ export default function MobileInspectionView() {
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
   const [isSopDrawerOpen, setIsSopDrawerOpen] = useState(false);
   const [activeDoc, setActiveDoc] = useState<DocumentItem | null>(null);
+  const [selectedViewerDoc, setSelectedViewerDoc] = useState<DocumentItem | null>(null);
+  const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState(false);
 
   // Checklist state
   const [answers, setAnswers] = useState<Record<number, { isPassed: boolean | null; comment: string }>>(
@@ -213,14 +217,22 @@ export default function MobileInspectionView() {
       </header>
 
       {/* Operator View Tabs */}
-      <div className="bg-[#1e293b]/70 border-b border-slate-700 px-4 py-1.5 flex gap-2 text-xs font-mono">
+      <div className="bg-[#1e293b]/70 border-b border-slate-700 px-4 py-1.5 flex gap-1.5 text-[11px] font-mono">
         <button
           onClick={() => setOperatorTab('INSPECTION')}
           className={`flex-1 py-1.5 rounded text-center transition font-semibold ${
             operatorTab === 'INSPECTION' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          Daily Inspection (FR-7.2-04)
+          Daily (FR-7.2-04)
+        </button>
+        <button
+          onClick={() => setOperatorTab('WEEKLY_RACK')}
+          className={`flex-1 py-1.5 rounded text-center transition font-semibold ${
+            operatorTab === 'WEEKLY_RACK' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Weekly Rack (FR-7.2-03)
         </button>
         <button
           onClick={() => setOperatorTab('MAINTENANCE_MATRIX')}
@@ -228,7 +240,7 @@ export default function MobileInspectionView() {
             operatorTab === 'MAINTENANCE_MATRIX' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          Scheduled Maintenance ({maintenanceTasks.filter(t => t.status !== 'COMPLETED').length})
+          PM Tasks ({maintenanceTasks.filter(t => t.status !== 'COMPLETED').length})
         </button>
       </div>
 
@@ -408,7 +420,46 @@ export default function MobileInspectionView() {
           </>
         )}
 
-        {/* TAB 2: SCHEDULED MAINTENANCE MATRIX (MANAGER-ADDED TASKS) */}
+        {/* TAB 2: WEEKLY RACK AUDIT (FR-7.2-03) */}
+        {operatorTab === 'WEEKLY_RACK' && (
+          <div className="space-y-3">
+            <div className="bg-[#1e293b] border border-slate-700 rounded-lg p-3.5 space-y-2">
+              <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-b border-slate-700/80 pb-1.5">
+                <span>Racking ISO Protocol</span>
+                <span className="text-blue-400 font-bold">FR-7.2-03</span>
+              </div>
+              <h2 className="text-sm font-bold text-white">Weekly High-Bay Pallet Rack Inspection</h2>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Mandatory weekly structural safety audit covering 13 active cavities (G-00 through L-01).
+                Inspect rear uprights (Green/Amber/Red), diagonal bracing, anchor bolts, brackets, and guide rails.
+              </p>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsWeeklyModalOpen(true)}
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs shadow-md transition flex items-center justify-center gap-1.5"
+                >
+                  <span>📋</span>
+                  <span>Launch Interactive FR-7.2-03 Checksheet</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-[#1e293b] border border-slate-700 rounded-lg p-3 space-y-2 text-xs">
+              <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                Audit Scope Overview:
+              </span>
+              <ul className="space-y-1 text-slate-300">
+                <li>• <strong>Sheet 1:</strong> Rear Loading Area upright condition, leveling shims, tilt, anchor bolts.</li>
+                <li>• <strong>Sheet 2:</strong> Brackets, rail support, pallet centering rails, and guide rail stoppers.</li>
+                <li>• <strong>General Safety:</strong> Floor cracks, missing bolts, damaged pallets, and safety signage.</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: SCHEDULED MAINTENANCE MATRIX (MANAGER-ADDED TASKS) */}
         {operatorTab === 'MAINTENANCE_MATRIX' && (
           <div className="space-y-3">
             <div className="bg-[#1e293b] border border-slate-700 rounded-lg p-3">
@@ -514,12 +565,24 @@ export default function MobileInspectionView() {
               </div>
 
               {activeDoc && (
-                <div className="bg-[#0f172a] p-3 rounded border border-blue-500/60 text-xs space-y-2">
+                <div className="bg-[#0f172a] p-3 rounded border border-blue-500/60 text-xs space-y-2.5">
                   <div className="font-bold text-white">{activeDoc.title}</div>
                   <div className="text-[10px] font-mono text-slate-400">
                     Uploaded by: {activeDoc.uploaded_by} • File: {activeDoc.file_name}
                   </div>
                   <p className="text-[11px] text-slate-300 leading-relaxed">{activeDoc.description}</p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedViewerDoc(activeDoc);
+                      setIsSopDrawerOpen(false);
+                    }}
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5"
+                  >
+                    <span>⚡</span>
+                    <span>Open Interactive Guide & Sheet Preview</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -533,6 +596,19 @@ export default function MobileInspectionView() {
           </div>
         </div>
       )}
+
+      {/* Weekly High-Bay Rack Inspection Modal (FR-7.2-03) */}
+      <WeeklyRackInspectionModal
+        isOpen={isWeeklyModalOpen}
+        onClose={() => setIsWeeklyModalOpen(false)}
+      />
+
+      {/* Digital SOP & High-Res Document Preview Modal */}
+      <DigitalSopViewerModal
+        document={selectedViewerDoc}
+        isOpen={!!selectedViewerDoc}
+        onClose={() => setSelectedViewerDoc(null)}
+      />
     </div>
   );
 }

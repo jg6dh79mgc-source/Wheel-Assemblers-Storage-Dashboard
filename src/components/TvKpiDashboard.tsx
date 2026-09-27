@@ -5,8 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
+import { DocumentItem } from '@/lib/documentStore';
 import OperatorManagementModal from './OperatorManagementModal';
 import AdminDocumentAndMaintenanceModal from './AdminDocumentAndMaintenanceModal';
+import YearlyMaintenanceMatrix from './YearlyMaintenanceMatrix';
+import WeeklyRackInspectionModal from './WeeklyRackInspectionModal';
+import DigitalSopViewerModal from './DigitalSopViewerModal';
 
 interface ShuttleData {
   id: string;
@@ -164,6 +168,8 @@ export default function TvKpiDashboard() {
   // Storeroom controls: Tyre store is permanently greyed out; user can show or hide it
   const [hideTyreStore, setHideTyreStore] = useState<boolean>(true);
   const [isAlertsOpen, setIsAlertsOpen] = useState<boolean>(false);
+  const [isWeeklyRackModalOpen, setIsWeeklyRackModalOpen] = useState<boolean>(false);
+  const [sopViewerDoc, setSopViewerDoc] = useState<DocumentItem | null>(null);
   const [selectedCavity, setSelectedCavity] = useState<CavitySlot | null>(null);
 
   // Both shuttles in RIM STOREROOM as specified
@@ -810,94 +816,102 @@ export default function TvKpiDashboard() {
           </>
         )}
 
-        {/* TAB 2: CLEAN MAINTENANCE GAUGES */}
+        {/* TAB 2: CLEAN MAINTENANCE MATRIX & GAUGES */}
         {activeTab === 'MAINTENANCE' && (
           <div className="space-y-4">
-            {/* Shuttle 1 Gauges */}
-            <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-4 space-y-3">
-              <div className="flex justify-between items-center border-b border-slate-700 pb-2">
-                <span className="text-xs font-semibold text-white">
-                  Shuttle 1 Health Gauges (Rim Storeroom)
-                </span>
-                <span className="text-[11px] font-mono text-slate-400">SHUTTLE-01</span>
+            {/* 52-Week Year Calendar Maintenance Matrix */}
+            <YearlyMaintenanceMatrix
+              onOpenWeeklyRackModal={() => setIsWeeklyRackModalOpen(true)}
+            />
+
+            {/* Shuttle 1 & Shuttle 2 Telemetry Gauges */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Shuttle 1 Gauges */}
+              <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center border-b border-slate-700 pb-2">
+                  <span className="text-xs font-semibold text-white">
+                    Shuttle 1 Health Gauges (Rim Storeroom)
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400">SHUTTLE-01</span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <CircularMetric
+                    value={shuttles[0].odometer_meters}
+                    max={10000000}
+                    label="Wheel Life"
+                    sublabel="8,840 / 10,000"
+                    unit="km"
+                  />
+                  <CircularMetric
+                    value={shuttles[0].lifting_cycles}
+                    max={100000}
+                    label="Lifting Mechanism"
+                    sublabel="89.4k / 100k"
+                    unit="cycles"
+                  />
+                  <CircularMetric
+                    value={shuttles[0].charge_cycles}
+                    max={3000}
+                    label="Battery Cycles"
+                    sublabel="2,410 / 3,000"
+                    unit="cycles"
+                  />
+                  <CircularMetric
+                    value={3}
+                    max={7}
+                    label="Optical Sensors"
+                    sublabel="3 / 7"
+                    unit="days"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <CircularMetric
-                  value={shuttles[0].odometer_meters}
-                  max={10000000}
-                  label="Wheel Life"
-                  sublabel="8,840 / 10,000"
-                  unit="km"
-                />
-                <CircularMetric
-                  value={shuttles[0].lifting_cycles}
-                  max={100000}
-                  label="Lifting Mechanism"
-                  sublabel="89.4k / 100k"
-                  unit="cycles"
-                />
-                <CircularMetric
-                  value={shuttles[0].charge_cycles}
-                  max={3000}
-                  label="Battery Cycles"
-                  sublabel="2,410 / 3,000"
-                  unit="cycles"
-                />
-                <CircularMetric
-                  value={3}
-                  max={7}
-                  label="Optical Sensors"
-                  sublabel="3 / 7"
-                  unit="days"
-                />
-              </div>
-            </div>
+              {/* Shuttle 2 Gauges */}
+              <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center border-b border-slate-700 pb-2">
+                  <span className="text-xs font-semibold text-white">
+                    Shuttle 2 Health Gauges (Rim Storeroom)
+                  </span>
+                  <button
+                    onClick={() => setIsDocModalOpen(true)}
+                    className="px-2 py-0.5 text-xs text-blue-300 border border-slate-600 rounded hover:bg-slate-700 transition font-mono"
+                  >
+                    Manage SOPs & FMEA
+                  </button>
+                </div>
 
-            {/* Shuttle 2 Gauges */}
-            <div className="bg-[#1e293b] border border-slate-700/70 rounded-lg p-4 space-y-3">
-              <div className="flex justify-between items-center border-b border-slate-700 pb-2">
-                <span className="text-xs font-semibold text-white">
-                  Shuttle 2 Health Gauges (Rim Storeroom)
-                </span>
-                <button
-                  onClick={() => setIsDocModalOpen(true)}
-                  className="px-2 py-0.5 text-xs text-blue-300 border border-slate-600 rounded hover:bg-slate-700 transition"
-                >
-                  Manage Documents & FMEA
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <CircularMetric
-                  value={shuttles[1].odometer_meters}
-                  max={10000000}
-                  label="Wheel Life"
-                  sublabel="9,350 / 10,000"
-                  unit="km"
-                />
-                <CircularMetric
-                  value={shuttles[1].lifting_cycles}
-                  max={100000}
-                  label="Lifting Mechanism"
-                  sublabel="96.8k / 100k"
-                  unit="cycles"
-                />
-                <CircularMetric
-                  value={shuttles[1].charge_cycles}
-                  max={3000}
-                  label="Battery Cycles"
-                  sublabel="2,890 / 3,000"
-                  unit="cycles"
-                />
-                <CircularMetric
-                  value={8}
-                  max={7}
-                  label="Optical Sensors"
-                  sublabel="8 / 7 (Overdue)"
-                  unit="days"
-                  warningPct={80}
-                />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <CircularMetric
+                    value={shuttles[1].odometer_meters}
+                    max={10000000}
+                    label="Wheel Life"
+                    sublabel="9,350 / 10,000"
+                    unit="km"
+                  />
+                  <CircularMetric
+                    value={shuttles[1].lifting_cycles}
+                    max={100000}
+                    label="Lifting Mechanism"
+                    sublabel="96.8k / 100k"
+                    unit="cycles"
+                  />
+                  <CircularMetric
+                    value={shuttles[1].charge_cycles}
+                    max={3000}
+                    label="Battery Cycles"
+                    sublabel="2,890 / 3,000"
+                    unit="cycles"
+                  />
+                  <CircularMetric
+                    value={8}
+                    max={7}
+                    label="Optical Sensors"
+                    sublabel="8 / 7 (Overdue)"
+                    unit="days"
+                    warningPct={80}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -974,6 +988,19 @@ export default function TvKpiDashboard() {
       <AdminDocumentAndMaintenanceModal
         isOpen={isDocModalOpen}
         onClose={() => setIsDocModalOpen(false)}
+      />
+
+      {/* Weekly High-Bay Rack Inspection Modal (FR-7.2-03) */}
+      <WeeklyRackInspectionModal
+        isOpen={isWeeklyRackModalOpen}
+        onClose={() => setIsWeeklyRackModalOpen(false)}
+      />
+
+      {/* Digital SOP & High-Res Document Preview Modal */}
+      <DigitalSopViewerModal
+        document={sopViewerDoc}
+        isOpen={!!sopViewerDoc}
+        onClose={() => setSopViewerDoc(null)}
       />
     </div>
   );
