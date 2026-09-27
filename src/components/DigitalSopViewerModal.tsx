@@ -15,91 +15,98 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
   if (!isOpen || !document) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 select-none font-sans">
-      <div className="bg-[#1e293b] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn text-xs text-slate-100">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 select-none font-sans">
+      <div className="bg-white border border-slate-300 rounded w-full max-w-4xl max-h-[92vh] flex flex-col shadow-xl overflow-hidden text-slate-800">
         {/* Header */}
-        <div className="bg-[#0f172a] px-5 py-3 border-b border-slate-700 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <span className="px-2 py-0.5 rounded bg-blue-900/80 text-blue-300 border border-blue-700 text-[10px] font-mono font-bold">
+        <div className="bg-[#0a192f] px-4 sm:px-6 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <span className="px-2 py-0.5 rounded-sm bg-[#172554] text-blue-200 border border-blue-900 text-xs font-mono font-bold tracking-wide">
               {document.code}
             </span>
             <div>
-              <h3 className="font-bold text-white text-sm leading-tight">{document.title}</h3>
-              <div className="text-[10px] font-mono text-slate-400">
-                {document.category} • {document.version}
+              <h3 className="font-bold text-white text-sm sm:text-base leading-snug font-mono">
+                {document.title}
+              </h3>
+              <div className="text-[11px] font-mono text-slate-400">
+                {document.category} • Revision {document.version}
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Toggle View Mode */}
+            {/* View Mode Switcher */}
             {document.image_url && (
-              <div className="flex items-center bg-[#1e293b] p-0.5 rounded border border-slate-700 font-mono text-[11px]">
+              <div className="flex items-center bg-[#172554] p-0.5 rounded-sm border border-blue-900 font-mono text-xs">
                 <button
                   onClick={() => setViewMode('INTERACTIVE')}
-                  className={`px-2.5 py-1 rounded transition ${
-                    viewMode === 'INTERACTIVE' ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
+                  className={`px-3 py-1 rounded-sm transition text-xs font-bold ${
+                    viewMode === 'INTERACTIVE'
+                      ? 'bg-[#1e3a8a] text-white'
+                      : 'text-blue-200 hover:text-white'
                   }`}
                 >
-                  ⚡ Interactive Guide
+                  Interactive Guide
                 </button>
                 <button
                   onClick={() => setViewMode('ORIGINAL_SHEET')}
-                  className={`px-2.5 py-1 rounded transition ${
-                    viewMode === 'ORIGINAL_SHEET' ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
+                  className={`px-3 py-1 rounded-sm transition text-xs font-bold ${
+                    viewMode === 'ORIGINAL_SHEET'
+                      ? 'bg-[#1e3a8a] text-white'
+                      : 'text-blue-200 hover:text-white'
                   }`}
                 >
-                  📄 Original Document Sheet
+                  Document Sheet
                 </button>
               </div>
             )}
 
             <button
               onClick={onClose}
-              className="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-mono text-sm transition"
+              className="px-2.5 py-1 rounded-sm bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 font-mono text-xs transition border border-blue-900"
+              aria-label="Close"
             >
-              ✕
+              Close
             </button>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50">
           {viewMode === 'ORIGINAL_SHEET' && document.image_url ? (
             /* Original Document Sheet Preview */
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-[11px] font-mono text-slate-400 pb-1 border-b border-slate-800">
-                <span>Direct In-App Visual Document Preview (Zero Download Required)</span>
-                <span>Wheel Assemblers ISO Archive</span>
+              <div className="flex justify-between items-center text-xs font-mono text-slate-500 pb-1 border-b border-slate-200">
+                <span>Direct Visual Document Preview (Zero Delay ISO Archive)</span>
+                <span>Document: {document.file_name}</span>
               </div>
-              <div className="bg-[#0f172a] p-2 rounded-xl border border-slate-700 flex justify-center overflow-auto max-h-[68vh]">
+              <div className="bg-white p-3 rounded-lg border border-slate-200 flex justify-center overflow-auto max-h-[70vh] shadow-inner">
                 <img
                   src={document.image_url}
                   alt={document.title}
-                  className="max-w-full h-auto rounded shadow-lg object-contain"
+                  className="max-w-full h-auto rounded border border-slate-200 object-contain"
                 />
               </div>
             </div>
           ) : (
             /* Interactive Operator-Friendly Guide */
             <div className="space-y-4">
-              {/* Critical Quality Point & Reason Callout */}
+              {/* Critical Quality Point & Purpose Callout */}
               {document.critical_point && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-xl bg-blue-950/60 border border-blue-800/80 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-blue-300 uppercase tracking-wider block">
+                  <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 space-y-1">
+                    <span className="text-[11px] font-mono font-bold text-blue-900 uppercase tracking-wider block">
                       Critical Quality Point
                     </span>
-                    <p className="text-xs text-slate-200 font-medium leading-relaxed">
+                    <p className="text-xs text-blue-950 font-medium leading-relaxed">
                       {document.critical_point}
                     </p>
                   </div>
                   {document.reason && (
-                    <div className="p-3.5 rounded-xl bg-[#0f172a] border border-slate-700 space-y-1">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
-                        Reason / Purpose
+                    <div className="p-4 rounded-lg bg-white border border-slate-200 space-y-1">
+                      <span className="text-[11px] font-mono font-bold text-slate-700 uppercase tracking-wider block">
+                        Reason & Objective
                       </span>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-600 leading-relaxed">
                         {document.reason}
                       </p>
                     </div>
@@ -107,19 +114,17 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
                 </div>
               )}
 
-              {/* Matters to Obey (Safety & Quality) */}
+              {/* Matters to Obey (Safety & Environmental Guidelines) */}
               {document.matters_to_obey && document.matters_to_obey.length > 0 && (
-                <div className="p-4 rounded-xl bg-[#0f172a] border border-amber-500/40 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400 font-bold text-xs uppercase tracking-wider font-mono">
-                      ⚠️ Matters to Absolutely Obey (Safety, Environment, Quality)
-                    </span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-slate-200">
+                <div className="p-4 rounded-lg bg-white border border-slate-200 space-y-2.5">
+                  <span className="text-slate-800 font-bold text-xs uppercase tracking-wider font-mono block">
+                    Matters to Absolutely Obey (Safety, Quality, Environment)
+                  </span>
+                  <ul className="space-y-1.5 text-xs text-slate-700">
                     {document.matters_to_obey.map((m, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-amber-400 font-bold shrink-0">•</span>
-                        <span>{m}</span>
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <span className="text-blue-700 font-bold shrink-0 mt-0.5">•</span>
+                        <span className="leading-relaxed">{m}</span>
                       </li>
                     ))}
                   </ul>
@@ -128,11 +133,11 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
 
               {/* Step-by-Step Operator Instructions */}
               {document.steps && document.steps.length > 0 && (
-                <div className="space-y-3 pt-2">
-                  <div className="font-mono font-bold text-slate-200 uppercase tracking-wider text-xs border-b border-slate-700 pb-1.5 flex items-center justify-between">
-                    <span>Operational Procedure Steps</span>
-                    <span className="text-[10px] text-slate-400 font-normal">
-                      Follow sequentially
+                <div className="space-y-3 pt-1">
+                  <div className="font-mono font-bold text-slate-800 uppercase tracking-wider text-xs border-b border-slate-200 pb-1.5 flex items-center justify-between">
+                    <span>Sequential Standard Operating Steps</span>
+                    <span className="text-[11px] text-slate-500 font-normal">
+                      Follow in exact order
                     </span>
                   </div>
 
@@ -140,21 +145,23 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
                     {document.steps.map((st, idx) => (
                       <div
                         key={idx}
-                        className="p-3.5 rounded-xl bg-[#0f172a] border border-slate-700/80 hover:border-slate-600 transition flex items-start gap-3.5"
+                        className="p-4 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition flex items-start gap-3.5 shadow-sm"
                       >
-                        <div className="h-7 w-7 rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/50 flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-md bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-mono font-bold text-xs shrink-0">
                           {st.step_number}
                         </div>
                         <div className="space-y-1 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-100 text-xs">{st.title}</span>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                              {st.title}
+                            </span>
                             {st.image_ref && (
-                              <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.2 rounded border border-slate-700">
+                              <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">
                                 {st.image_ref}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-300 leading-relaxed">
+                          <p className="text-xs text-slate-600 leading-relaxed">
                             {st.description}
                           </p>
                         </div>
@@ -164,13 +171,13 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
                 </div>
               )}
 
-              {/* Reaction Plan */}
+              {/* Reaction Plan (Emergency or Nonconformance - Red for Critical) */}
               {document.reaction_plan && (
-                <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 space-y-1 text-xs">
-                  <span className="text-[10px] font-mono font-bold text-rose-300 uppercase tracking-wider block">
-                    🚨 Reaction Plan (In Case of Nonconformance or Emergency)
+                <div className="p-4 rounded-lg bg-red-50 border border-red-200 space-y-1.5 text-xs">
+                  <span className="text-[11px] font-mono font-bold text-red-700 uppercase tracking-wider block">
+                    CRITICAL: Reaction Plan (Nonconformance or Emergency Incident)
                   </span>
-                  <p className="text-rose-200 font-medium">
+                  <p className="text-red-900 font-medium leading-relaxed">
                     {document.reaction_plan}
                   </p>
                 </div>
@@ -180,13 +187,13 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
         </div>
 
         {/* Footer */}
-        <div className="bg-[#0f172a] px-5 py-3 border-t border-slate-700 flex justify-between items-center text-[10px] font-mono text-slate-400">
+        <div className="bg-white px-4 sm:px-6 py-3 border-t border-slate-200 flex justify-between items-center text-xs font-mono text-slate-500">
           <div>
-            Registered by: <strong className="text-slate-200">{document.uploaded_by}</strong>
+            ISO Registered By: <strong className="text-slate-800">{document.uploaded_by}</strong>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
+            className="px-4 py-1.5 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition"
           >
             Close Guide
           </button>

@@ -12,7 +12,7 @@ export interface MaintenanceOccasion {
   weeksScheduled: number[]; // 1 to 52
 }
 
-const MAINTENANCE_PROGRAMS: MaintenanceOccasion[] = [
+const INITIAL_MAINTENANCE_PROGRAMS: MaintenanceOccasion[] = [
   {
     id: 'prog-01',
     name: 'FR-7.2-03 Weekly High-Bay Racking Check',
@@ -20,7 +20,7 @@ const MAINTENANCE_PROGRAMS: MaintenanceOccasion[] = [
     component: 'Racking Structure (Uprights, Shims, Anchors, Rails)',
     frequency: 'WEEKLY',
     target: 'RACKING',
-    weeksScheduled: Array.from({ length: 52 }, (_, i) => i + 1), // Every week
+    weeksScheduled: Array.from({ length: 52 }, (_, i) => i + 1),
   },
   {
     id: 'prog-02',
@@ -119,63 +119,67 @@ const MONTH_GROUPS = [
   { name: 'Feb', weeks: [5, 6, 7, 8] },
   { name: 'Mar', weeks: [9, 10, 11, 12, 13] },
   { name: 'Apr', weeks: [14, 15, 16, 17] },
-  { name: 'May', weeks: [18, 19, 20, 21] },
-  { name: 'Jun', weeks: [22, 23, 24, 25, 26] },
+  { name: 'May', weeks: [18, 19, 20, 21, 22] },
+  { name: 'Jun', weeks: [23, 24, 25, 26] },
   { name: 'Jul', weeks: [27, 28, 29, 30] },
-  { name: 'Aug', weeks: [31, 32, 33, 34] },
-  { name: 'Sep', weeks: [35, 36, 37, 38, 39] },
+  { name: 'Aug', weeks: [31, 32, 33, 34, 35] },
+  { name: 'Sep', weeks: [36, 37, 38, 39] },
   { name: 'Oct', weeks: [40, 41, 42, 43] },
-  { name: 'Nov', weeks: [44, 45, 46, 47] },
-  { name: 'Dec', weeks: [48, 49, 50, 51, 52] },
+  { name: 'Nov', weeks: [44, 45, 46, 47, 48] },
+  { name: 'Dec', weeks: [49, 50, 51, 52] },
 ];
 
-const CURRENT_WEEK = 39; // Today's operational week for late September 2026
+const CURRENT_WEEK = 39;
 
 interface Props {
   onOpenWeeklyRackModal?: () => void;
+  onOpenAddPmAction?: () => void;
 }
 
-export default function YearlyMaintenanceMatrix({ onOpenWeeklyRackModal }: Props) {
-  const [filterTarget, setFilterTarget] = useState<'ALL' | 'SHUTTLE_1' | 'SHUTTLE_2' | 'RACKING' | 'SAFETY'>('ALL');
+export default function YearlyMaintenanceMatrix({ onOpenWeeklyRackModal, onOpenAddPmAction }: Props) {
+  const [targetFilter, setTargetFilter] = useState<'ALL' | 'SHUTTLE_1' | 'SHUTTLE_2' | 'RACKING' | 'SAFETY'>('ALL');
   const [selectedCell, setSelectedCell] = useState<{
     program: MaintenanceOccasion;
     week: number;
     status: 'COMPLETED' | 'DUE' | 'SCHEDULED';
   } | null>(null);
 
-  // Completed items memory in state
+  const [mobileMatrixMode, setMobileMatrixMode] = useState<'WEEK_FOCUS' | 'MONTH_VIEW' | 'FULL_GRID'>('WEEK_FOCUS');
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState<number>(8); // Default to Sep (month index 8)
+
   const [completedCells, setCompletedCells] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    // Pre-mark all past scheduled occurrences (Week 1 to 38) as completed
-    MAINTENANCE_PROGRAMS.forEach((prog) => {
+    const defaultDone: Record<string, boolean> = {};
+    INITIAL_MAINTENANCE_PROGRAMS.forEach((prog) => {
       prog.weeksScheduled.forEach((w) => {
         if (w < CURRENT_WEEK) {
-          initial[`${prog.id}-w${w}`] = true;
+          defaultDone[`${prog.id}-w${w}`] = true;
         }
       });
     });
-    return initial;
+    return defaultDone;
   });
 
-  const toggleComplete = (progId: string, week: number) => {
-    const key = `${progId}-w${week}`;
+  const toggleComplete = (programId: string, week: number) => {
+    const key = `${programId}-w${week}`;
     setCompletedCells((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
+    if (selectedCell && selectedCell.program.id === programId && selectedCell.week === week) {
+      setSelectedCell(null);
+    }
   };
 
-  const filteredPrograms = MAINTENANCE_PROGRAMS.filter((p) => {
-    if (filterTarget === 'ALL') return true;
-    return p.target === filterTarget;
+  const filteredPrograms = INITIAL_MAINTENANCE_PROGRAMS.filter((p) => {
+    if (targetFilter === 'ALL') return true;
+    return p.target === targetFilter;
   });
 
-  // Calculate statistics
   let totalScheduledToDate = 0;
   let totalCompletedToDate = 0;
   let dueThisWeekCount = 0;
 
-  MAINTENANCE_PROGRAMS.forEach((prog) => {
+  INITIAL_MAINTENANCE_PROGRAMS.forEach((prog) => {
     prog.weeksScheduled.forEach((w) => {
       if (w <= CURRENT_WEEK) {
         totalScheduledToDate++;
@@ -191,300 +195,434 @@ export default function YearlyMaintenanceMatrix({ onOpenWeeklyRackModal }: Props
   const complianceRate = Math.round((totalCompletedToDate / (totalScheduledToDate || 1)) * 100);
 
   return (
-    <div className="bg-[#1e293b] border border-slate-700/80 rounded-xl p-4 sm:p-5 space-y-4 text-xs font-sans">
-      {/* 1. Header & KPI Statistics */}
-      <div className="flex flex-wrap items-center justify-between border-b border-slate-700/80 pb-3 gap-3">
+    <div className="bg-white border border-slate-300 rounded p-4 sm:p-5 space-y-4 text-xs font-sans text-slate-800">
+      {/* 1. Header & Actions */}
+      <div className="flex flex-wrap items-center justify-between border-b border-slate-200 pb-3 gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded bg-blue-500" />
-            <h3 className="text-sm font-bold text-white tracking-wide uppercase">
+            <span className="h-2 w-2 rounded-full bg-[#0a192f]" />
+            <h3 className="text-sm font-bold text-slate-900 tracking-wide uppercase font-mono">
               Annual Preventative Maintenance Matrix (52 Weeks • 2026)
             </h3>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5 font-mono">
             ISO 9001 Scheduled Preventative Maintenance & Weekly High-Bay Structural Audits
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {onOpenAddPmAction && (
+            <button
+              onClick={onOpenAddPmAction}
+              className="px-3 py-1.5 rounded bg-[#0a192f] hover:bg-[#172554] text-white font-mono text-xs font-bold transition"
+            >
+              + ADD PM ACTION
+            </button>
+          )}
+
           {onOpenWeeklyRackModal && (
             <button
               onClick={onOpenWeeklyRackModal}
-              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition shadow-sm flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-mono text-xs font-medium transition"
             >
-              <span>📋</span>
-              <span>Open Weekly Rack Checksheet (FR-7.2-03)</span>
+              WEEKLY RACK CHECK (FR-7.2-03)
             </button>
           )}
         </div>
       </div>
 
       {/* 2. Top Metric Tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Annual Compliance</span>
-          <span className="text-lg font-mono font-bold text-emerald-400">{complianceRate}%</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono">
+        <div className="bg-slate-50 p-3 rounded border border-slate-300">
+          <span className="text-[10px] uppercase text-slate-500 block">Annual Compliance</span>
+          <span className="text-lg font-bold text-[#1e3a8a]">{complianceRate}%</span>
           <span className="text-[10px] text-slate-500 block">{totalCompletedToDate} / {totalScheduledToDate} Executed</span>
         </div>
 
-        <div className="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Current Operating Week</span>
-          <span className="text-lg font-mono font-bold text-white">Week {CURRENT_WEEK}</span>
-          <span className="text-[10px] text-slate-400 block">Late September 2026</span>
+        <div className="bg-slate-50 p-3 rounded border border-slate-300">
+          <span className="text-[10px] uppercase text-slate-500 block">Operating Week</span>
+          <span className="text-lg font-bold text-slate-900">Week {CURRENT_WEEK}</span>
+          <span className="text-[10px] text-slate-500 block">Late September 2026</span>
         </div>
 
-        <div className="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Due This Week (W{CURRENT_WEEK})</span>
-          <span className="text-lg font-mono font-bold text-amber-300">{dueThisWeekCount} Occasions</span>
-          <span className="text-[10px] text-slate-400 block">Action Required</span>
+        <div className="bg-slate-50 p-3 rounded border border-slate-300">
+          <span className="text-[10px] uppercase text-slate-500 block">Due This Week (W{CURRENT_WEEK})</span>
+          <span className={`text-lg font-bold ${dueThisWeekCount > 0 ? 'text-red-700' : 'text-slate-900'}`}>
+            {dueThisWeekCount} Occasions
+          </span>
+          <span className="text-[10px] text-slate-500 block">Action Required</span>
         </div>
 
-        <div className="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Next Major Service</span>
-          <span className="text-lg font-mono font-bold text-blue-300">Week 52</span>
-          <span className="text-[10px] text-slate-400 block">Annual Rack & Anchor Audit</span>
+        <div className="bg-slate-50 p-3 rounded border border-slate-300">
+          <span className="text-[10px] uppercase text-slate-500 block">Next Major Service</span>
+          <span className="text-lg font-bold text-[#1e3a8a]">Week 52</span>
+          <span className="text-[10px] text-slate-500 block">Annual Rack & Anchor Audit</span>
         </div>
       </div>
 
-      {/* 3. Filter Controls & Legend */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-700/60">
-        <div className="flex items-center gap-1.5 bg-[#0f172a] p-1 rounded-lg border border-slate-700">
-          <span className="text-[10px] font-mono text-slate-400 px-1.5">Filter:</span>
+      {/* 3. Filter Controls, View Mode Selector & Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-slate-200">
+        {/* View Mode Switcher */}
+        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200 text-xs font-mono">
+          <button
+            onClick={() => setMobileMatrixMode('WEEK_FOCUS')}
+            className={`px-3 py-1 rounded transition text-xs font-medium ${
+              mobileMatrixMode === 'WEEK_FOCUS' ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Week {CURRENT_WEEK} Focus
+          </button>
+          <button
+            onClick={() => setMobileMatrixMode('MONTH_VIEW')}
+            className={`px-3 py-1 rounded transition text-xs font-medium ${
+              mobileMatrixMode === 'MONTH_VIEW' ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Month View
+          </button>
+          <button
+            onClick={() => setMobileMatrixMode('FULL_GRID')}
+            className={`px-3 py-1 rounded transition text-xs font-medium ${
+              mobileMatrixMode === 'FULL_GRID' ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            52-Week Table
+          </button>
+        </div>
+
+        {/* Equipment Filter */}
+        <div className="flex items-center gap-1 text-xs font-mono">
+          <span className="text-slate-500 text-[11px] mr-1 hidden sm:inline">Filter:</span>
           {(['ALL', 'SHUTTLE_1', 'SHUTTLE_2', 'RACKING', 'SAFETY'] as const).map((t) => (
             <button
               key={t}
-              onClick={() => setFilterTarget(t)}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition ${
-                filterTarget === t ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              onClick={() => setTargetFilter(t)}
+              className={`px-2 py-0.5 rounded transition ${
+                targetFilter === t
+                  ? 'bg-blue-100 text-blue-900 font-bold border border-blue-200'
+                  : 'bg-slate-100 text-slate-600 hover:text-slate-900'
               }`}
             >
-              {t === 'ALL'
-                ? 'All Programs'
-                : t === 'SHUTTLE_1'
-                ? 'Shuttle 1'
-                : t === 'SHUTTLE_2'
-                ? 'Shuttle 2'
-                : t === 'RACKING'
-                ? 'Racking (FR-7.2-03)'
-                : 'Safety E-Stop'}
+              {t === 'ALL' ? 'All' : t.replace('_', ' ')}
             </button>
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] font-mono">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded bg-emerald-500" />
-            <span className="text-slate-300">Completed (✓)</span>
+        {/* Minimal Legend */}
+        <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">
+          <div className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded bg-[#1e3a8a]" />
+            <span>Completed</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded bg-amber-500 animate-pulse" />
-            <span className="text-amber-300">Due This Week (W{CURRENT_WEEK})</span>
+          <div className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded bg-red-600" />
+            <span>Due W{CURRENT_WEEK} (Critical)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded border border-blue-400 bg-blue-950/60" />
-            <span className="text-slate-400">Scheduled Upcoming</span>
+          <div className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded bg-blue-100 border border-blue-300" />
+            <span>Scheduled</span>
           </div>
         </div>
       </div>
 
-      {/* 4. 52-WEEK CALENDAR MATRIX TABLE */}
-      <div className="overflow-x-auto border border-slate-700/90 rounded-lg bg-[#0f172a] shadow-inner">
-        <table className="w-full text-left border-collapse min-w-[1100px]">
-          {/* Top Month Header */}
-          <thead>
-            <tr className="bg-slate-900 border-b border-slate-800 text-[10px] font-mono text-slate-400">
-              <th className="py-2 px-3 sticky left-0 bg-slate-900 z-20 w-72 border-r border-slate-800 font-bold uppercase">
-                Maintenance Occasion / Protocol
-              </th>
-              {MONTH_GROUPS.map((m) => (
-                <th
-                  key={m.name}
-                  colSpan={m.weeks.length}
-                  className="py-1 px-1 text-center border-r border-slate-800 font-bold text-slate-300 bg-slate-900/90"
-                >
-                  {m.name}
-                </th>
-              ))}
-            </tr>
+      {/* 4A. MOBILE VIEW: CURRENT WEEK FOCUS */}
+      {mobileMatrixMode === 'WEEK_FOCUS' && (
+        <div className="space-y-3">
+          <div className="flex justify-between items-center text-xs font-mono border-b border-slate-200 pb-1.5">
+            <span className="font-bold text-slate-900 uppercase">
+              Current Operating Tasks • Week {CURRENT_WEEK} (Late September)
+            </span>
+            <span className="text-slate-500 text-[11px]">
+              Tap task to toggle completion
+            </span>
+          </div>
 
-            {/* Week Numbers W01 - W52 */}
-            <tr className="bg-[#0b1329] border-b border-slate-700 text-[9px] font-mono text-slate-400">
-              <th className="py-1 px-3 sticky left-0 bg-[#0b1329] z-20 border-r border-slate-800">
-                Target / Component
-              </th>
-              {Array.from({ length: 52 }, (_, i) => i + 1).map((w) => (
-                <th
-                  key={`wk-${w}`}
-                  className={`py-1 text-center w-5 font-bold ${
-                    w === CURRENT_WEEK
-                      ? 'bg-amber-500 text-black font-extrabold'
-                      : w % 2 === 0
-                      ? 'bg-slate-900/60 text-slate-400'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {w}
-                </th>
-              ))}
-            </tr>
-          </thead>
+          <div className="space-y-2">
+            {filteredPrograms
+              .filter((prog) => prog.weeksScheduled.includes(CURRENT_WEEK))
+              .map((prog) => {
+                const isDone = completedCells[`${prog.id}-w${CURRENT_WEEK}`];
 
-          {/* Table Body */}
-          <tbody className="divide-y divide-slate-800/80 font-mono text-[10px]">
-            {filteredPrograms.map((prog) => (
-              <tr key={prog.id} className="hover:bg-slate-900/40 transition">
-                {/* Program Description */}
-                <td className="py-2 px-3 sticky left-0 bg-[#0f172a] z-10 border-r border-slate-800">
-                  <div className="font-bold text-slate-100 flex items-center justify-between">
-                    <span>{prog.name}</span>
-                    <span className="text-[9px] px-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                      {prog.frequency}
-                    </span>
+                return (
+                  <div
+                    key={`focus-${prog.id}`}
+                    className={`p-3.5 rounded-lg border transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+                      isDone
+                        ? 'bg-slate-50 border-slate-200 opacity-80'
+                        : 'bg-white border-blue-300 shadow-sm'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                          isDone
+                            ? 'bg-blue-50 text-blue-900 border border-blue-200'
+                            : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                          {isDone ? 'Completed' : 'Due This Week'}
+                        </span>
+                        <span className="font-bold text-slate-900 text-xs sm:text-sm">{prog.name}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-1 font-mono">
+                        Target: {prog.component} • {prog.frequency}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0">
+                      {prog.code === 'FR-7.2-03' && onOpenWeeklyRackModal && (
+                        <button
+                          type="button"
+                          onClick={onOpenWeeklyRackModal}
+                          className="px-3 py-1.5 rounded bg-blue-50 hover:bg-blue-100 text-[#1e3a8a] border border-blue-200 font-medium text-xs transition"
+                        >
+                          Checksheet Form
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => toggleComplete(prog.id, CURRENT_WEEK)}
+                        className={`px-3 py-1.5 rounded text-xs font-medium transition ${
+                          isDone
+                            ? 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                            : 'bg-[#1e3a8a] hover:bg-blue-900 text-white'
+                        }`}
+                      >
+                        {isDone ? 'Undo' : 'Mark Completed'}
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-[9px] text-slate-400 truncate max-w-[260px]">{prog.component}</div>
-                </td>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
-                {/* 52 Week Cells */}
-                {Array.from({ length: 52 }, (_, i) => i + 1).map((w) => {
-                  const isScheduled = prog.weeksScheduled.includes(w);
-                  const isDone = completedCells[`${prog.id}-w${w}`];
-                  const isCurrent = w === CURRENT_WEEK;
+      {/* 4B. MOBILE VIEW: MONTH SELECTOR */}
+      {mobileMatrixMode === 'MONTH_VIEW' && (
+        <div className="space-y-3">
+          {/* Month Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs font-mono">
+            {MONTH_GROUPS.map((m, idx) => (
+              <button
+                key={m.name}
+                onClick={() => setSelectedMonthIndex(idx)}
+                className={`px-3 py-1.5 rounded transition shrink-0 font-medium ${
+                  selectedMonthIndex === idx
+                    ? 'bg-[#1e3a8a] text-white font-bold'
+                    : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                {m.name} {idx === 8 ? '(Current)' : ''}
+              </button>
+            ))}
+          </div>
 
-                  if (!isScheduled) {
+          {/* Month Weeks Table */}
+          <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-100 text-slate-700 font-mono text-[11px] border-b border-slate-200 uppercase">
+                <tr>
+                  <th className="py-2.5 px-3">Maintenance Task</th>
+                  {MONTH_GROUPS[selectedMonthIndex].weeks.map((w) => (
+                    <th
+                      key={`mhead-w${w}`}
+                      className={`py-2 px-2 text-center border-l border-slate-200 ${
+                        w === CURRENT_WEEK ? 'bg-blue-50 text-blue-950 font-bold' : ''
+                      }`}
+                    >
+                      W{w}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 font-mono text-xs">
+                {filteredPrograms.map((prog) => (
+                  <tr key={`month-row-${prog.id}`} className="hover:bg-slate-50">
+                    <td className="py-2.5 px-3">
+                      <div className="font-bold text-slate-900 truncate max-w-[200px] sm:max-w-xs">{prog.name}</div>
+                      <div className="text-[10px] text-slate-500 truncate max-w-[200px]">{prog.component}</div>
+                    </td>
+                    {MONTH_GROUPS[selectedMonthIndex].weeks.map((w) => {
+                      const isScheduled = prog.weeksScheduled.includes(w);
+                      const isDone = completedCells[`${prog.id}-w${w}`];
+                      const isCurrent = w === CURRENT_WEEK;
+
+                      if (!isScheduled) {
+                        return (
+                          <td key={`mw-${prog.id}-${w}`} className="py-2 px-2 text-center border-l border-slate-200 text-slate-300">
+                            -
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td
+                          key={`mw-${prog.id}-${w}`}
+                          onClick={() => toggleComplete(prog.id, w)}
+                          className={`py-2 px-2 text-center border-l border-slate-200 cursor-pointer ${
+                            isCurrent ? 'bg-blue-50/60' : ''
+                          }`}
+                        >
+                          <span
+                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              isDone
+                                ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                                : isCurrent
+                                ? 'bg-red-50 text-red-700 border border-red-300'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}
+                          >
+                            {isDone ? 'DONE' : isCurrent ? 'DUE' : 'PLAN'}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 4C. FULL 52-WEEK MATRIX (HORIZONTAL SCROLL ON PHONES) */}
+      {mobileMatrixMode === 'FULL_GRID' && (
+        <div className="border border-slate-200 rounded-lg overflow-x-auto bg-white">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead className="bg-slate-100 text-slate-700 font-mono text-[10px] uppercase border-b border-slate-200">
+              <tr>
+                <th className="py-2.5 px-3 sticky left-0 bg-slate-100 z-20 border-r border-slate-200 min-w-[220px]">
+                  Program / Occasion
+                </th>
+                {Array.from({ length: 52 }, (_, i) => i + 1).map((w) => (
+                  <th
+                    key={`w-head-${w}`}
+                    className={`py-2 px-1 text-center font-bold border-r border-slate-200 min-w-[24px] ${
+                      w === CURRENT_WEEK ? 'bg-blue-50 text-blue-950 font-black' : ''
+                    }`}
+                  >
+                    {w}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-200 font-mono text-xs">
+              {filteredPrograms.map((prog) => (
+                <tr key={prog.id} className="hover:bg-slate-50">
+                  <td className="py-2 px-3 sticky left-0 bg-white z-10 border-r border-slate-200">
+                    <div className="font-bold text-slate-900 truncate max-w-[200px]">{prog.name}</div>
+                    <div className="text-[10px] text-slate-500 truncate max-w-[200px]">{prog.component}</div>
+                  </td>
+
+                  {Array.from({ length: 52 }, (_, i) => i + 1).map((w) => {
+                    const isScheduled = prog.weeksScheduled.includes(w);
+                    const isDone = completedCells[`${prog.id}-w${w}`];
+                    const isCurrent = w === CURRENT_WEEK;
+
+                    if (!isScheduled) {
+                      return (
+                        <td key={`cell-${prog.id}-${w}`} className="text-center p-0.5 border-r border-slate-200 text-slate-300 text-[10px]">
+                          -
+                        </td>
+                      );
+                    }
+
                     return (
                       <td
                         key={`cell-${prog.id}-${w}`}
-                        className={`text-center p-0.5 border-r border-slate-800/40 ${
-                          isCurrent ? 'bg-amber-950/20' : ''
+                        onClick={() =>
+                          setSelectedCell({
+                            program: prog,
+                            week: w,
+                            status: isDone ? 'COMPLETED' : isCurrent ? 'DUE' : 'SCHEDULED',
+                          })
+                        }
+                        className={`text-center p-0.5 cursor-pointer border-r border-slate-200 ${
+                          isCurrent ? 'bg-blue-50/50' : ''
                         }`}
                       >
-                        <span className="text-slate-800 text-[8px] select-none">·</span>
+                        <div
+                          className={`h-4 w-4 mx-auto rounded flex items-center justify-center text-[8px] font-bold ${
+                            isDone
+                              ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                              : isCurrent
+                              ? 'bg-red-50 text-red-700 border border-red-300 font-black'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
+                        >
+                          {isDone ? 'D' : isCurrent ? '!' : '·'}
+                        </div>
                       </td>
                     );
-                  }
-
-                  let cellClass = 'bg-blue-950/40 border border-blue-500/50 text-blue-300';
-                  let symbol = '○';
-
-                  if (isDone) {
-                    cellClass = 'bg-emerald-950/70 border border-emerald-500 text-emerald-300 font-bold';
-                    symbol = '✓';
-                  } else if (isCurrent) {
-                    cellClass = 'bg-amber-500 text-black font-black animate-pulse border border-amber-300';
-                    symbol = '!';
-                  }
-
-                  return (
-                    <td
-                      key={`cell-${prog.id}-${w}`}
-                      onClick={() =>
-                        setSelectedCell({
-                          program: prog,
-                          week: w,
-                          status: isDone ? 'COMPLETED' : isCurrent ? 'DUE' : 'SCHEDULED',
-                        })
-                      }
-                      title={`${prog.name} (W${w}): ${isDone ? 'Completed' : isCurrent ? 'DUE NOW' : 'Scheduled'}`}
-                      className={`text-center p-0.5 cursor-pointer border-r border-slate-800/60 ${
-                        isCurrent ? 'bg-amber-950/30' : ''
-                      }`}
-                    >
-                      <div
-                        className={`h-4 w-4 mx-auto rounded flex items-center justify-center text-[9px] transition hover:scale-125 ${cellClass}`}
-                      >
-                        {symbol}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 5. Cell Detail Popover Modal */}
       {selectedCell && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#1e293b] border border-slate-700 rounded-xl max-w-md w-full p-5 space-y-4 shadow-2xl animate-fadeIn">
-            <div className="flex justify-between items-start border-b border-slate-700 pb-2.5">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-300 rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl">
+            <div className="flex justify-between items-start border-b border-slate-200 pb-2.5">
               <div>
-                <span className="text-[10px] font-mono uppercase text-blue-400 font-semibold">
-                  Week {selectedCell.week} • Scheduled Occasion
+                <span className="text-[10px] font-mono uppercase text-blue-900 font-semibold">
+                  Week {selectedCell.week} • Scheduled PM Occasion
                 </span>
-                <h4 className="text-sm font-bold text-white">{selectedCell.program.name}</h4>
+                <h4 className="text-sm font-bold text-slate-900">{selectedCell.program.name}</h4>
               </div>
               <button
                 onClick={() => setSelectedCell(null)}
-                className="text-slate-400 hover:text-white font-mono text-sm"
+                className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs"
               >
-                ✕
+                Close
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="bg-[#0f172a] p-3 rounded border border-slate-700 space-y-1">
-                <div className="text-slate-400">Target Component:</div>
-                <div className="text-white font-semibold">{selectedCell.program.component}</div>
+            <div className="space-y-2 text-xs font-mono text-slate-600">
+              <div className="flex justify-between">
+                <span>Program Code:</span>
+                <strong className="text-slate-900">{selectedCell.program.code}</strong>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-[#0f172a] p-2.5 rounded border border-slate-700">
-                  <span className="text-[10px] text-slate-400 block font-mono">Frequency</span>
-                  <span className="text-slate-200 font-semibold">{selectedCell.program.frequency}</span>
-                </div>
-                <div className="bg-[#0f172a] p-2.5 rounded border border-slate-700">
-                  <span className="text-[10px] text-slate-400 block font-mono">Status</span>
-                  <span
-                    className={`font-semibold ${
-                      completedCells[`${selectedCell.program.id}-w${selectedCell.week}`]
-                        ? 'text-emerald-400'
-                        : selectedCell.week === CURRENT_WEEK
-                        ? 'text-amber-400'
-                        : 'text-blue-300'
-                    }`}
-                  >
-                    {completedCells[`${selectedCell.program.id}-w${selectedCell.week}`]
-                      ? '✓ COMPLETED'
-                      : selectedCell.week === CURRENT_WEEK
-                      ? '⚠ DUE THIS WEEK'
-                      : 'PLANNED / SCHEDULED'}
-                  </span>
-                </div>
+              <div className="flex justify-between">
+                <span>Target Equipment:</span>
+                <strong className="text-slate-900">{selectedCell.program.target}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Frequency:</span>
+                <strong className="text-slate-900">{selectedCell.program.frequency}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <span
+                  className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                    selectedCell.status === 'COMPLETED'
+                      ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                      : selectedCell.status === 'DUE'
+                      ? 'bg-red-50 text-red-700 border border-red-300'
+                      : 'bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  {selectedCell.status}
+                </span>
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="pt-2 flex justify-between items-center border-t border-slate-700">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200">
               <button
-                onClick={() => {
-                  toggleComplete(selectedCell.program.id, selectedCell.week);
-                  setSelectedCell(null);
-                }}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold transition ${
-                  completedCells[`${selectedCell.program.id}-w${selectedCell.week}`]
-                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
-                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                }`}
+                type="button"
+                onClick={() => toggleComplete(selectedCell.program.id, selectedCell.week)}
+                className="px-4 py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white font-medium rounded text-xs transition"
               >
                 {completedCells[`${selectedCell.program.id}-w${selectedCell.week}`]
-                  ? 'Mark as Incomplete'
-                  : '✓ Mark Service Completed'}
+                  ? 'Undo Completed Status'
+                  : 'Mark Service Completed'}
               </button>
-
-              {selectedCell.program.code === 'FR-7.2-03' && onOpenWeeklyRackModal && (
-                <button
-                  onClick={() => {
-                    setSelectedCell(null);
-                    onOpenWeeklyRackModal();
-                  }}
-                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition"
-                >
-                  Open FR-7.2-03 Checksheet →
-                </button>
-              )}
             </div>
           </div>
         </div>

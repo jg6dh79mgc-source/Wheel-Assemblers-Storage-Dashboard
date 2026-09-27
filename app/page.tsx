@@ -115,22 +115,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center p-4 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
-      <div className="w-full max-w-sm space-y-5">
+    <div className="min-h-screen bg-[#f0f2f5] flex flex-col items-center justify-center p-4 text-slate-800 font-sans selection:bg-blue-600 selection:text-white">
+      <div className="w-full max-w-sm space-y-4">
         {/* Brand Header */}
         <div className="text-center space-y-1">
-          <div className="inline-flex items-center justify-center h-11 w-11 rounded-lg bg-blue-700 shadow-md mb-1 font-black text-white text-base">
+          <div className="inline-flex items-center justify-center h-10 w-10 rounded-sm bg-[#0a192f] border border-slate-700 mb-1 font-bold text-white text-sm font-mono">
             WA
           </div>
-          <h1 className="text-lg font-bold text-white tracking-tight">Wheel Assemblers</h1>
-          <p className="text-xs text-slate-400 font-mono">Automated High-Bay Storage</p>
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight font-mono uppercase">Wheel Assemblers</h1>
+          <p className="text-[11px] text-slate-500 font-mono">Automated Deep-Lane Storage System</p>
         </div>
 
         {/* Authentication Card */}
-        <div className="bg-[#1e293b] border border-slate-700/80 rounded-xl p-6 shadow-xl space-y-4">
-          <div className="border-b border-slate-700 pb-2 flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
-              {mode === 'login' ? 'System Sign-In' : hasExistingAccounts ? 'Create New Account' : 'Initial System Setup'}
+        <div className="bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4">
+          <div className="border-b border-slate-200 pb-2.5 flex items-center justify-between">
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+              {mode === 'login' ? 'System Sign-In' : hasExistingAccounts ? 'Create Account' : 'Initial Setup'}
             </h2>
             {hasExistingAccounts && (
               <button
@@ -140,7 +140,7 @@ export default function LoginPage() {
                   setSuccessMsg('');
                   setMode(mode === 'login' ? 'register' : 'login');
                 }}
-                className="text-[11px] font-mono text-blue-400 hover:text-blue-300 transition underline underline-offset-2"
+                className="text-xs font-mono text-blue-900 hover:underline transition font-semibold"
               >
                 {mode === 'login' ? 'Register Account' : 'Back to Sign-In'}
               </button>
@@ -148,19 +148,19 @@ export default function LoginPage() {
           </div>
 
           {!hasExistingAccounts && mode === 'register' && (
-            <div className="p-2.5 rounded bg-blue-950/60 border border-blue-800 text-blue-300 text-[11px]">
+            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs">
               No accounts registered. Please set up the primary Administrator account.
             </div>
           )}
 
           {errorMsg && (
-            <div className="p-2.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300 text-xs">
+            <div className="p-2.5 rounded bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
               {errorMsg}
             </div>
           )}
 
           {successMsg && (
-            <div className="p-2.5 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs">
+            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
               {successMsg}
             </div>
           )}
@@ -169,26 +169,26 @@ export default function LoginPage() {
             /* Login Form */
             <form onSubmit={handleLogin} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Username</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
                 <input
                   type="text"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                   autoComplete="username"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Password</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Password</label>
                 <input
                   type="password"
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                   autoComplete="current-password"
                 />
@@ -197,7 +197,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-sm flex items-center justify-center"
+                className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition"
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </button>
@@ -206,36 +206,36 @@ export default function LoginPage() {
             /* Registration Form */
             <form onSubmit={handleRegister} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Username</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
                 <input
                   type="text"
                   placeholder="e.g. jdoe"
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Full Name</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. John Doe"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-300 mb-1">System Role</label>
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">System Role</label>
                   <select
                     value={regRole}
                     onChange={(e) => setRegRole(e.target.value as any)}
-                    className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 transition"
                   >
                     <option value="ADMIN">Administrator (Manager)</option>
                     <option value="OPERATOR">Operator</option>
@@ -243,11 +243,11 @@ export default function LoginPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-300 mb-1">Shift</label>
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Shift</label>
                   <select
                     value={regShift}
                     onChange={(e) => setRegShift(e.target.value as any)}
-                    className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 transition"
                   >
                     <option value="Shift 1 (06:00 - 14:00)">Shift 1 (Morning)</option>
                     <option value="Shift 2 (14:00 - 22:00)">Shift 2 (Afternoon)</option>
@@ -257,32 +257,32 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Password</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Password</label>
                 <input
                   type="password"
                   placeholder="At least 6 characters"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Confirm Password</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Confirm Password</label>
                 <input
                   type="password"
                   placeholder="Re-enter password"
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-sm mt-1"
+                className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition mt-1"
               >
                 Create Account & Sign In
               </button>

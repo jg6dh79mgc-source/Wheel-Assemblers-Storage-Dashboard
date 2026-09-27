@@ -78,11 +78,11 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
 
   // General Operations State
   const [generalChecks, setGeneralChecks] = useState([
-    { id: 1, text: 'Any de-formed or damaged Protection', status: 'NO' as 'YES' | 'NO', comment: '' },
-    { id: 2, text: 'Any cracks in the floor', status: 'NO' as 'YES' | 'NO', comment: '' },
-    { id: 3, text: 'Any missing Bolts or Nuts', status: 'NO' as 'YES' | 'NO', comment: '' },
-    { id: 4, text: 'Any damaged pallets', status: 'NO' as 'YES' | 'NO', comment: '' },
-    { id: 5, text: 'Any missing or damaged Signage', status: 'NO' as 'YES' | 'NO', comment: '' },
+    { id: 1, text: 'Any deformed or damaged protection barriers', status: 'NO' as 'YES' | 'NO', comment: '' },
+    { id: 2, text: 'Any floor cracks or structural settlement', status: 'NO' as 'YES' | 'NO', comment: '' },
+    { id: 3, text: 'Any missing anchor bolts, nuts, or clamp hardware', status: 'NO' as 'YES' | 'NO', comment: '' },
+    { id: 4, text: 'Any damaged or splintered wood/steel pallets in lanes', status: 'NO' as 'YES' | 'NO', comment: '' },
+    { id: 5, text: 'Any missing or illegible safety signage & load limit notices', status: 'NO' as 'YES' | 'NO', comment: '' },
   ]);
 
   if (!isOpen) return null;
@@ -95,93 +95,95 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 select-none font-sans">
-      <div className="bg-[#1e293b] border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn text-xs text-slate-100">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 select-none font-sans">
+      <div className="bg-white border border-slate-300 sm:rounded w-full max-w-5xl h-full sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden text-xs text-slate-800">
         {/* Document Header */}
-        <div className="bg-[#0f172a] px-5 py-3.5 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#0a192f] px-4 sm:px-6 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-white">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded bg-blue-700 flex items-center justify-center font-black text-white text-xs">
+            <div className="h-7 w-7 rounded-sm bg-[#172554] flex items-center justify-center font-bold text-white text-xs shrink-0 border border-blue-900 font-mono">
               WA
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-white uppercase text-sm">FR-7.2-03 Weekly High-Bay Pallet Rack Inspection</span>
-                <span className="text-[10px] font-mono bg-blue-950 text-blue-300 border border-blue-800 px-1.5 rounded">
-                  Rev 01 20.01.2026
+                <span className="font-bold text-white uppercase text-xs sm:text-sm font-mono">
+                  FR-7.2-03 Weekly High-Bay Pallet Rack Inspection
+                </span>
+                <span className="text-[10px] font-mono bg-[#172554] text-blue-200 border border-blue-900 px-1.5 py-0.2 rounded hidden xs:inline">
+                  Rev 01
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 font-mono">
-                Owner: Operations Manager • Controller: ISO Management Representative
+                Operations Manager • ISO Management Controller
               </div>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-mono text-sm transition"
+            className="px-2.5 py-1 rounded-sm bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 text-xs font-mono transition"
           >
-            ✕
+            Close
           </button>
         </div>
 
         {/* Tab Switcher & Inspector Sign-off Details */}
-        <div className="bg-[#1e293b] px-5 py-2.5 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-2">
+        <div className="bg-slate-100 px-4 sm:px-6 py-2.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           {/* Tabs */}
-          <div className="flex items-center gap-1 bg-[#0f172a] p-0.5 rounded-lg border border-slate-700">
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded border border-slate-300 text-xs font-mono overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveSheet('SHEET_1')}
-              className={`px-3 py-1 rounded text-xs font-medium transition ${
-                activeSheet === 'SHEET_1' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1 rounded transition shrink-0 font-medium ${
+                activeSheet === 'SHEET_1' ? 'bg-[#1e3a8a] text-white font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Sheet 1: Uprights & Anchors (Rear)
+              Sheet 1: Uprights (Rear)
             </button>
             <button
               onClick={() => setActiveSheet('SHEET_2')}
-              className={`px-3 py-1 rounded text-xs font-medium transition ${
-                activeSheet === 'SHEET_2' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1 rounded transition shrink-0 font-medium ${
+                activeSheet === 'SHEET_2' ? 'bg-[#1e3a8a] text-white font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Sheet 2: Brackets & Guide Rails
+              Sheet 2: Brackets & Rails
             </button>
             <button
               onClick={() => setActiveSheet('GENERAL')}
-              className={`px-3 py-1 rounded text-xs font-medium transition ${
-                activeSheet === 'GENERAL' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1 rounded transition shrink-0 font-medium ${
+                activeSheet === 'GENERAL' ? 'bg-[#1e3a8a] text-white font-bold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              General Operations Safety
+              General Safety
             </button>
           </div>
 
           {/* Inspector Inputs */}
           <div className="flex items-center gap-3 text-xs font-mono">
             <div>
-              <span className="text-slate-400 text-[10px] mr-1">Date:</span>
+              <span className="text-slate-600 mr-1 font-semibold">Date:</span>
               <input
                 type="date"
                 value={inspectionDate}
                 onChange={(e) => setInspectionDate(e.target.value)}
-                className="bg-[#0f172a] border border-slate-700 rounded px-2 py-0.5 text-xs text-white"
+                className="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs text-slate-800"
               />
             </div>
             <div>
-              <span className="text-slate-400 text-[10px] mr-1">Inspector:</span>
+              <span className="text-slate-600 mr-1 font-semibold">Inspector:</span>
               <input
                 type="text"
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}
-                className="bg-[#0f172a] border border-slate-700 rounded px-2 py-0.5 text-xs text-white w-32"
+                className="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs text-slate-800 w-28"
               />
             </div>
           </div>
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50">
           {isSignedOff && (
-            <div className="p-3 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-200 text-center font-semibold">
-              ✓ FR-7.2-03 Inspection Form Successfully Signed Off and Archived!
+            <div className="p-3.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-center font-semibold text-xs">
+              FR-7.2-03 Weekly Checksheet Successfully Signed Off and Archived.
             </div>
           )}
 
@@ -189,52 +191,52 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
           {activeSheet === 'SHEET_1' && (
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-white uppercase tracking-wider font-mono">
+                <span className="font-bold text-slate-800 uppercase tracking-wider font-mono">
                   Loading Area (Rear) • Cavities G-00 to L-01
                 </span>
-                <span className="text-slate-400 font-mono text-[11px]">
-                  Green: Safe • Amber: Minor Dent / Monitor • Red: Out of Specification
+                <span className="text-slate-500 font-mono text-[11px]">
+                  Standard: Pass • Monitor: Track • Red: Out of Spec (Critical)
                 </span>
               </div>
 
-              <div className="overflow-x-auto border border-slate-700 rounded-lg">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-[#0f172a] text-slate-300 font-mono text-[10px] border-b border-slate-700 uppercase">
+              <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
+                <table className="w-full text-left border-collapse text-xs min-w-[640px]">
+                  <thead className="bg-slate-100 text-slate-700 font-mono text-[10px] border-b border-slate-200 uppercase">
                     <tr>
-                      <th className="py-2 px-3 border-r border-slate-800">Cavity No</th>
-                      <th className="py-2 px-3 border-r border-slate-800 text-center" colSpan={3}>
+                      <th className="py-2.5 px-3 border-r border-slate-200 sticky left-0 bg-slate-100 z-20">Cavity No</th>
+                      <th className="py-2 px-3 border-r border-slate-200 text-center" colSpan={3}>
                         Uprights Condition
                       </th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center">Diagonals Poor</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center">Leveling Shims Poor</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center">Anchor Bolts Poor</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center">Upright Tilt</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center">Stopper Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center">Diagonals Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center">Leveling Shims Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center">Anchor Bolts Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center">Upright Tilt</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center">Stopper Poor</th>
                       <th className="py-2 px-2 text-center">Lane Marking Poor</th>
                     </tr>
-                    <tr className="bg-slate-900/60 text-[9px] text-slate-400 text-center border-b border-slate-800">
-                      <th className="border-r border-slate-800"></th>
-                      <th className="text-emerald-400 py-1">Green</th>
-                      <th className="text-amber-400 py-1">Amber</th>
-                      <th className="text-rose-400 py-1 border-r border-slate-800">Red</th>
-                      <th className="border-r border-slate-800">Check</th>
-                      <th className="border-r border-slate-800">Check</th>
-                      <th className="border-r border-slate-800">Check</th>
-                      <th className="border-r border-slate-800">Yes / No</th>
-                      <th className="border-r border-slate-800">Check</th>
-                      <th>Check</th>
+                    <tr className="bg-slate-50 text-[9px] text-slate-600 text-center border-b border-slate-200">
+                      <th className="border-r border-slate-200 sticky left-0 bg-slate-50 z-20"></th>
+                      <th className="py-1">Standard</th>
+                      <th className="py-1">Monitor</th>
+                      <th className="text-red-700 py-1 border-r border-slate-200 font-bold">Defect (Red)</th>
+                      <th className="border-r border-slate-200">Defect</th>
+                      <th className="border-r border-slate-200">Defect</th>
+                      <th className="border-r border-slate-200">Defect</th>
+                      <th className="border-r border-slate-200">Yes / No</th>
+                      <th className="border-r border-slate-200">Defect</th>
+                      <th>Defect</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/80 font-mono text-xs">
+                  <tbody className="divide-y divide-slate-200 font-mono text-xs">
                     {ACTIVE_CAVITIES.map((cav) => {
                       const row = sheet1Data[cav];
                       return (
-                        <tr key={`s1-${cav}`} className="hover:bg-slate-800/40">
-                          <td className="py-1.5 px-3 font-bold text-white border-r border-slate-800 bg-[#0f172a]/60">
+                        <tr key={`s1-${cav}`} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 font-bold text-slate-900 border-r border-slate-200 bg-slate-50 sticky left-0 z-10">
                             {cav}
                           </td>
 
-                          {/* Uprights Green */}
+                          {/* Uprights Standard */}
                           <td className="py-1 px-1 text-center">
                             <button
                               type="button"
@@ -244,17 +246,17 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], uprights: 'GREEN' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.uprights === 'GREEN'
-                                  ? 'bg-emerald-500 text-black font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-[#1e3a8a] text-white'
+                                  : 'bg-slate-100 text-slate-400 hover:text-slate-700'
                               }`}
                             >
-                              ✓
+                              OK
                             </button>
                           </td>
 
-                          {/* Uprights Amber */}
+                          {/* Uprights Monitor */}
                           <td className="py-1 px-1 text-center">
                             <button
                               type="button"
@@ -264,18 +266,18 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], uprights: 'AMBER' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.uprights === 'AMBER'
-                                  ? 'bg-amber-500 text-black font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-slate-300 text-slate-900'
+                                  : 'bg-slate-100 text-slate-400 hover:text-slate-700'
                               }`}
                             >
-                              !
+                              MON
                             </button>
                           </td>
 
                           {/* Uprights Red */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <button
                               type="button"
                               onClick={() =>
@@ -284,18 +286,18 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], uprights: 'RED' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.uprights === 'RED'
-                                  ? 'bg-rose-500 text-white font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-red-600 text-white'
+                                  : 'bg-slate-100 text-slate-400 hover:text-red-700'
                               }`}
                             >
-                              ✕
+                              DEF
                             </button>
                           </td>
 
                           {/* Diagonals Poor */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.diagonalsPoor}
@@ -305,12 +307,12 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], diagonalsPoor: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                              className="rounded border-slate-300 text-[#1e3a8a] focus:ring-0"
                             />
                           </td>
 
                           {/* Leveling Shims Poor */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.shimsPoor}
@@ -320,12 +322,12 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], shimsPoor: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                              className="rounded border-slate-300 text-[#1e3a8a] focus:ring-0"
                             />
                           </td>
 
                           {/* Anchor Bolts Poor */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.anchorsPoor}
@@ -335,12 +337,12 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], anchorsPoor: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                              className="rounded border-slate-300 text-[#1e3a8a] focus:ring-0"
                             />
                           </td>
 
                           {/* Upright Tilt */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <button
                               type="button"
                               onClick={() =>
@@ -349,8 +351,8 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], uprightTilt: prev[cav].uprightTilt === 'NO' ? 'YES' : 'NO' },
                                 }))
                               }
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                row.uprightTilt === 'YES' ? 'bg-rose-900 text-rose-300 border border-rose-700' : 'bg-slate-800 text-slate-400'
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                row.uprightTilt === 'YES' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700'
                               }`}
                             >
                               {row.uprightTilt}
@@ -358,7 +360,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                           </td>
 
                           {/* Stopper Poor */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.stopperPoor}
@@ -368,7 +370,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], stopperPoor: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                              className="rounded border-slate-300 text-[#1e3a8a] focus:ring-0"
                             />
                           </td>
 
@@ -383,7 +385,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], laneMarkingPoor: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                              className="rounded border-slate-300 text-[#1e3a8a] focus:ring-0"
                             />
                           </td>
                         </tr>
@@ -399,52 +401,52 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
           {activeSheet === 'SHEET_2' && (
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-white uppercase tracking-wider font-mono">
+                <span className="font-bold text-slate-800 uppercase tracking-wider font-mono">
                   Loading Area (Rear) & Picking Area (Front) • Guide Rails & Brackets
                 </span>
-                <span className="text-slate-400 font-mono text-[11px]">
+                <span className="text-slate-500 font-mono text-[11px]">
                   R: Right Side • L: Left Side
                 </span>
               </div>
 
-              <div className="overflow-x-auto border border-slate-700 rounded-lg">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-[#0f172a] text-slate-300 font-mono text-[10px] border-b border-slate-700 uppercase">
+              <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
+                <table className="w-full text-left border-collapse text-xs min-w-[680px]">
+                  <thead className="bg-slate-100 text-slate-700 font-mono text-[10px] border-b border-slate-200 uppercase">
                     <tr>
-                      <th className="py-2 px-3 border-r border-slate-800">Cavity</th>
-                      <th className="py-2 px-3 border-r border-slate-800 text-center" colSpan={3}>
+                      <th className="py-2.5 px-3 border-r border-slate-200 sticky left-0 bg-slate-100 z-20">Cavity</th>
+                      <th className="py-2 px-3 border-r border-slate-200 text-center" colSpan={3}>
                         Brackets Condition
                       </th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center" colSpan={2}>Rail Support Poor</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center" colSpan={2}>Centering Rail Poor</th>
-                      <th className="py-2 px-2 border-r border-slate-800 text-center" colSpan={2}>Base/Guide Rails Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center" colSpan={2}>Rail Support Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center" colSpan={2}>Centering Rail Poor</th>
+                      <th className="py-2 px-2 border-r border-slate-200 text-center" colSpan={2}>Base/Guide Rails Poor</th>
                       <th className="py-2 px-2 text-center" colSpan={2}>Rail Stoppers Poor</th>
                     </tr>
-                    <tr className="bg-slate-900/60 text-[9px] text-slate-400 text-center border-b border-slate-800">
-                      <th className="border-r border-slate-800"></th>
-                      <th className="text-emerald-400 py-1">Green</th>
-                      <th className="text-amber-400 py-1">Amber</th>
-                      <th className="text-rose-400 py-1 border-r border-slate-800">Red</th>
+                    <tr className="bg-slate-50 text-[9px] text-slate-600 text-center border-b border-slate-200">
+                      <th className="border-r border-slate-200 sticky left-0 bg-slate-50 z-20"></th>
+                      <th className="py-1">Standard</th>
+                      <th className="py-1">Monitor</th>
+                      <th className="text-red-700 py-1 border-r border-slate-200 font-bold">Defect (Red)</th>
                       <th className="py-1">R</th>
-                      <th className="py-1 border-r border-slate-800">L</th>
+                      <th className="py-1 border-r border-slate-200">L</th>
                       <th className="py-1">R</th>
-                      <th className="py-1 border-r border-slate-800">L</th>
+                      <th className="py-1 border-r border-slate-200">L</th>
                       <th className="py-1">R</th>
-                      <th className="py-1 border-r border-slate-800">L</th>
+                      <th className="py-1 border-r border-slate-200">L</th>
                       <th className="py-1">R</th>
                       <th className="py-1">L</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/80 font-mono text-xs">
+                  <tbody className="divide-y divide-slate-200 font-mono text-xs">
                     {ACTIVE_CAVITIES.map((cav) => {
                       const row = sheet2Data[cav];
                       return (
-                        <tr key={`s2-${cav}`} className="hover:bg-slate-800/40">
-                          <td className="py-1.5 px-3 font-bold text-white border-r border-slate-800 bg-[#0f172a]/60">
+                        <tr key={`s2-${cav}`} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 font-bold text-slate-900 border-r border-slate-200 bg-slate-50 sticky left-0 z-10">
                             {cav}
                           </td>
 
-                          {/* Brackets Green */}
+                          {/* Brackets Standard */}
                           <td className="py-1 px-1 text-center">
                             <button
                               type="button"
@@ -454,17 +456,17 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], brackets: 'GREEN' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.brackets === 'GREEN'
-                                  ? 'bg-emerald-500 text-black font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-[#1e3a8a] text-white'
+                                  : 'bg-slate-100 text-slate-400 hover:text-slate-700'
                               }`}
                             >
-                              ✓
+                              OK
                             </button>
                           </td>
 
-                          {/* Brackets Amber */}
+                          {/* Brackets Monitor */}
                           <td className="py-1 px-1 text-center">
                             <button
                               type="button"
@@ -474,18 +476,18 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], brackets: 'AMBER' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.brackets === 'AMBER'
-                                  ? 'bg-amber-500 text-black font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-slate-300 text-slate-900'
+                                  : 'bg-slate-100 text-slate-400 hover:text-slate-700'
                               }`}
                             >
-                              !
+                              MON
                             </button>
                           </td>
 
                           {/* Brackets Red */}
-                          <td className="py-1 px-1 text-center border-r border-slate-800">
+                          <td className="py-1 px-1 text-center border-r border-slate-200">
                             <button
                               type="button"
                               onClick={() =>
@@ -494,13 +496,13 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], brackets: 'RED' },
                                 }))
                               }
-                              className={`h-5 w-5 rounded mx-auto transition ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
                                 row.brackets === 'RED'
-                                  ? 'bg-rose-500 text-white font-bold'
-                                  : 'bg-slate-800 border border-slate-700 text-transparent'
+                                  ? 'bg-red-600 text-white'
+                                  : 'bg-slate-100 text-slate-400 hover:text-red-700'
                               }`}
                             >
-                              ✕
+                              DEF
                             </button>
                           </td>
 
@@ -515,10 +517,10 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], railSupportPoorRight: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
-                          <td className="py-1 text-center border-r border-slate-800">
+                          <td className="py-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.railSupportPoorLeft}
@@ -528,7 +530,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], railSupportPoorLeft: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
 
@@ -543,10 +545,10 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], centeringRailPoorRight: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
-                          <td className="py-1 text-center border-r border-slate-800">
+                          <td className="py-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.centeringRailPoorLeft}
@@ -556,11 +558,11 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], centeringRailPoorLeft: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
 
-                          {/* Base/Guide Rails R / L */}
+                          {/* Guide Rails R / L */}
                           <td className="py-1 text-center">
                             <input
                               type="checkbox"
@@ -571,10 +573,10 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], guideRailsPoorRight: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
-                          <td className="py-1 text-center border-r border-slate-800">
+                          <td className="py-1 text-center border-r border-slate-200">
                             <input
                               type="checkbox"
                               checked={row.guideRailsPoorLeft}
@@ -584,7 +586,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], guideRailsPoorLeft: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
 
@@ -599,7 +601,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], stoppersPoorRight: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
                           <td className="py-1 text-center">
@@ -612,7 +614,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                                   [cav]: { ...prev[cav], stoppersPoorLeft: e.target.checked },
                                 }))
                               }
-                              className="rounded border-slate-700"
+                              className="rounded border-slate-300 text-[#1e3a8a]"
                             />
                           </td>
                         </tr>
@@ -624,57 +626,46 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
-          {/* GENERAL OPERATIONS SAFETY */}
+          {/* GENERAL SAFETY CHECKS */}
           {activeSheet === 'GENERAL' && (
-            <div className="space-y-4">
-              <div className="font-bold text-white uppercase tracking-wider font-mono text-xs">
-                General Operation Inspection Checks
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-800 uppercase tracking-wider font-mono">
+                  General Warehouse High-Bay Safety Conditions
+                </span>
+                <span className="text-slate-500 font-mono text-[11px]">
+                  All anomalies must be recorded
+                </span>
               </div>
 
-              <div className="border border-slate-700 rounded-lg overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-[#0f172a] text-slate-300 font-mono text-[10px] border-b border-slate-700 uppercase">
+              <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="bg-slate-100 text-slate-700 font-mono text-[10px] border-b border-slate-200 uppercase">
                     <tr>
-                      <th className="py-2 px-3">Inspection Item</th>
-                      <th className="py-2 px-3 text-center w-24">Yes</th>
-                      <th className="py-2 px-3 text-center w-24">No</th>
-                      <th className="py-2 px-3">Comments / Observations</th>
+                      <th className="py-2.5 px-3">Question / Operational Criteria</th>
+                      <th className="py-2.5 px-3 text-center w-28">Status</th>
+                      <th className="py-2.5 px-3">Observations / Remedial Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/80">
+                  <tbody className="divide-y divide-slate-200 font-mono text-xs">
                     {generalChecks.map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-slate-800/40">
-                        <td className="py-3 px-3 font-medium text-slate-200">
-                          {idx + 1}. {item.text}
-                        </td>
+                      <tr key={item.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-3 text-slate-800 font-medium">{item.text}</td>
                         <td className="py-3 px-3 text-center">
                           <button
                             type="button"
                             onClick={() => {
                               const updated = [...generalChecks];
-                              updated[idx].status = 'YES';
+                              updated[idx].status = updated[idx].status === 'NO' ? 'YES' : 'NO';
                               setGeneralChecks(updated);
                             }}
                             className={`px-3 py-1 rounded font-bold text-xs ${
-                              item.status === 'YES' ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400'
+                              item.status === 'YES'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-slate-100 text-slate-700 border border-slate-300'
                             }`}
                           >
-                            YES
-                          </button>
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...generalChecks];
-                              updated[idx].status = 'NO';
-                              setGeneralChecks(updated);
-                            }}
-                            className={`px-3 py-1 rounded font-bold text-xs ${
-                              item.status === 'NO' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            NO
+                            {item.status === 'YES' ? 'DEFECT (YES)' : 'NO DEFECT'}
                           </button>
                         </td>
                         <td className="py-3 px-3">
@@ -687,7 +678,7 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
                               updated[idx].comment = e.target.value;
                               setGeneralChecks(updated);
                             }}
-                            className="w-full bg-[#0f172a] border border-slate-700 rounded px-2.5 py-1 text-xs text-white"
+                            className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs text-slate-800 focus:border-blue-600 outline-none"
                           />
                         </td>
                       </tr>
@@ -700,24 +691,23 @@ export default function WeeklyRackInspectionModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Footer with Sign-Off Button */}
-        <div className="bg-[#0f172a] px-5 py-3 border-t border-slate-700 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-[11px] font-mono text-slate-400">
-            Sign-off locks FR-7.2-03 into the ISO archive for ISO audit compliance.
+        <div className="bg-white px-4 sm:px-6 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-[11px] font-mono text-slate-500">
+            Sign-off validates FR-7.2-03 into the ISO 9001 compliance record.
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs transition"
+              className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium text-xs transition"
             >
               Cancel
             </button>
             <button
               onClick={handleSignOff}
-              className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md flex items-center gap-1.5"
+              className="px-5 py-2 rounded bg-[#1e3a8a] hover:bg-blue-900 text-white font-medium text-xs transition shadow-sm"
             >
-              <span>✓</span>
-              <span>Sign Off & Archive Weekly Check</span>
+              Sign Off & Archive Weekly Check
             </button>
           </div>
         </div>
