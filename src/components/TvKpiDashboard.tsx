@@ -110,20 +110,20 @@ const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: '5A6F113', occupied: 28, capacity: 29 },
 ];
 
-// Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound)
+// Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound, Rounded Up to Integers)
 // Note: 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per operational directive
 const ACTIVE_CROSS_SECTION_SKUS = [
-  { code: '5a19de0-01', short: '5a19de0', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 1.8, dispatch: 1.8, bays: 'K-1' },
-  { code: '5A6F100-01', short: '5A6F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 33.7, dispatch: 33.5, bays: 'H-0, J-0, H-1, K-2' },
-  { code: '5A6F114-01', short: '5A6F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2.4, dispatch: 2.3, bays: 'K-0' },
-  { code: '5A90F90-01', short: '5A90F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 4.6, dispatch: 4.8, bays: 'I-2' },
-  { code: '5A90F91-01', short: '5A90F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 4.6, dispatch: 4.8, bays: 'J-1' },
-  { code: '5A6F112-01', short: '5A6F112', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 8.7, dispatch: 8.7, bays: 'I-1' },
-  { code: '5A6F113-01', short: '5A6F113', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 8.7, dispatch: 8.7, bays: 'G-0, I-1' },
-  { code: '5A6F117-01', short: '5A6F117', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 1.4, dispatch: 1.2, bays: 'L-1' },
-  { code: '5A6F118-01', short: '5A6F118', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 1.4, dispatch: 1.2, bays: 'L-1' },
-  { code: '5A6F119-01', short: '5A6F119', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2.1, dispatch: 1.7, bays: 'J-2' },
-  { code: '5A6F120-01', short: '5A6F120', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2.1, dispatch: 1.7, bays: 'L-0' },
+  { code: '5a19de0-01', short: '5a19de0', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'K-1' },
+  { code: '5A6F100-01', short: '5A6F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 34, dispatch: 34, buffer4d: 136, bays: 'H-0, J-0, H-1, K-2' },
+  { code: '5A6F114-01', short: '5A6F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 3, dispatch: 3, buffer4d: 12, bays: 'K-0' },
+  { code: '5A90F90-01', short: '5A90F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'I-2' },
+  { code: '5A90F91-01', short: '5A90F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'J-1' },
+  { code: '5A6F112-01', short: '5A6F112', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'I-1' },
+  { code: '5A6F113-01', short: '5A6F113', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 9, dispatch: 9, buffer4d: 36, bays: 'G-0, I-1' },
+  { code: '5A6F117-01', short: '5A6F117', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
+  { code: '5A6F118-01', short: '5A6F118', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'L-1' },
+  { code: '5A6F119-01', short: '5A6F119', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'J-2' },
+  { code: '5A6F120-01', short: '5A6F120', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 3, dispatch: 2, buffer4d: 8, bays: 'L-0' },
 ];
 
 // Tyre Storeroom (Permanently Greyed Out, Bays E to A, Levels 0 to 3)
@@ -176,6 +176,7 @@ export default function TvKpiDashboard() {
 
   // Desktop vs Mobile Layout simulation mode
   const [adminViewMode, setAdminViewMode] = useState<'DESKTOP' | 'MOBILE'>('DESKTOP');
+  const [mobileShowElevationGrid, setMobileShowElevationGrid] = useState<boolean>(false);
 
   // Shuttles state (Both in Rim Storeroom)
   const [shuttles, setShuttles] = useState<ShuttleData[]>([
@@ -208,9 +209,10 @@ export default function TvKpiDashboard() {
   ]);
 
   useEffect(() => {
-    // Set responsive sidebar: auto-collapse on screens < 1024px
+    // Set responsive sidebar & mobile mode: auto-collapse and set mobile view on screens < 1024px
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsSidebarOpen(false);
+      setAdminViewMode('MOBILE');
     }
 
     const timer = setInterval(() => {
@@ -470,257 +472,505 @@ export default function TvKpiDashboard() {
         </aside>
 
         {/* MAIN WORKING AREA (LIGHT GREY BACKGROUND) */}
-        <main className={`flex-1 overflow-y-auto transition-all ${adminViewMode === 'MOBILE' ? 'p-2 sm:p-4 flex justify-center bg-slate-300' : 'p-3 sm:p-5'}`}>
-          <div className={adminViewMode === 'MOBILE' ? 'w-full max-w-sm bg-[#f0f2f5] shadow-2xl rounded border border-slate-400 p-2.5 sm:p-3 space-y-3 min-h-full' : 'space-y-4'}>
+        <main className={`flex-1 overflow-y-auto transition-all ${adminViewMode === 'MOBILE' ? 'p-2 sm:p-4 flex justify-center bg-slate-200' : 'p-3 sm:p-5'}`}>
+          <div className={adminViewMode === 'MOBILE' ? 'w-full max-w-md bg-[#f0f2f5] shadow-xl rounded border border-slate-300 p-2.5 sm:p-3.5 space-y-3 min-h-full' : 'space-y-4'}>
           {/* TAB 1: CAVITIES & CROSS SECTION */}
           {activeTab === 'MONITOR' && (
             <>
-              {/* 4 INDUSTRIAL VITALS TILES (NO FRILLS, CLEAN TYPOGRAPHY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {/* Tile 1: Shuttle 1 */}
-                <div className="bg-white border border-slate-300 p-3.5 rounded">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="font-bold text-slate-900 font-mono">SHUTTLE 1 (RIM)</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-slate-300 bg-slate-100 text-slate-700">
-                      {shuttles[0].status}
-                    </span>
-                  </div>
-                  <div className="my-2">
-                    <div className="flex justify-between text-xs font-mono text-slate-600">
-                      <span>BATTERY</span>
-                      <span className="font-bold text-slate-900">{shuttles[0].battery_pct}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
-                      <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[0].battery_pct}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
-                    <span>POSITION: BAY J (L1)</span>
-                    <span>ODO: 8,840 KM</span>
-                  </div>
-                </div>
-
-                {/* Tile 2: Shuttle 2 */}
-                <div className="bg-white border border-slate-300 p-3.5 rounded">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="font-bold text-slate-900 font-mono">SHUTTLE 2 (RIM)</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-blue-300 bg-blue-50 text-blue-900 font-bold">
-                      ACTIVE
-                    </span>
-                  </div>
-                  <div className="my-2">
-                    <div className="flex justify-between text-xs font-mono text-slate-600">
-                      <span>BATTERY</span>
-                      <span className="font-bold text-slate-900">{shuttles[1].battery_pct}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
-                      <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[1].battery_pct}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
-                    <span>POSITION: BAY H (L0)</span>
-                    <span>ODO: 9,350 KM</span>
-                  </div>
-                </div>
-
-                {/* Tile 3: Pallet Flow (No Upper Bounds, Averaged Daily Values) */}
-                <div className="bg-white border border-slate-300 p-3.5 rounded">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="font-bold text-slate-900 font-mono">THROUGHPUT FLOW</span>
-                    <span className="text-[10px] font-mono text-slate-500">DAILY AVERAGE</span>
-                  </div>
-                  <div className="space-y-1.5 my-2">
+              {adminViewMode === 'MOBILE' ? (
+                /* ========================================================
+                   EXECUTIVE MOBILE SUMMARY VIEW (CLEAN, SUMMARIZED, TOUCH-OPTIMIZED)
+                   ======================================================== */
+                <div className="space-y-3 font-sans">
+                  {/* 1. Mobile Executive Header Banner */}
+                  <div className="bg-[#0a192f] text-white p-3 rounded flex justify-between items-center border border-slate-800">
                     <div>
-                      <div className="flex justify-between text-[11px] font-mono">
-                        <span className="text-slate-600">INBOUND</span>
-                        <span className="font-bold text-slate-900 text-sm">72</span>
-                      </div>
-                      <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-[#1e3a8a] h-full" style={{ width: '72%' }} />
-                      </div>
+                      <span className="text-[9px] font-mono uppercase text-slate-400 block tracking-wider">EXECUTIVE MOBILE VIEW</span>
+                      <span className="text-xs font-bold font-mono">WHEEL ASSEMBLERS SCADA</span>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-[11px] font-mono">
-                        <span className="text-slate-600">OUTBOUND</span>
-                        <span className="font-bold text-slate-900 text-sm">70</span>
-                      </div>
-                      <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-slate-400 h-full" style={{ width: '70%' }} />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
-                    <span>ACTIVE PALLETS / DAY</span>
-                    <span className="font-bold text-slate-800">72 IN • 70 OUT</span>
-                  </div>
-                </div>
-
-                {/* Tile 4: Stock Buffer (~75% Full, 4 Days of Stock) */}
-                <div className="bg-white border border-slate-300 p-3.5 rounded">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="font-bold text-slate-900 font-mono">USABLE BUFFER</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-blue-200 bg-blue-50 text-blue-900">
-                      READY
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900 border border-blue-700 text-blue-200 font-bold">
+                      ROOM 75% FULL
                     </span>
                   </div>
-                  <div className="my-2">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-mono font-bold text-slate-900">4.0</span>
-                      <span className="text-xs text-slate-500 font-mono">DAYS OF STOCK</span>
-                    </div>
-                    <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
-                      <div className="bg-[#1e3a8a] h-full" style={{ width: '75%' }} />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
-                    <span>OCCUPIED</span>
-                    <span>348 / 464 PALLETS (75%)</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* CROSS-SECTIONAL ELEVATION VIEW */}
-              <div className="bg-white border border-slate-300 p-2.5 sm:p-4 rounded space-y-3">
-                <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
-                  <span className="font-bold uppercase tracking-wider text-slate-900 text-[11px] sm:text-xs">
-                    STORAGE RACKING CROSS-SECTIONAL ELEVATION
-                  </span>
-
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-3 w-3 bg-[#1e3a8a] rounded-sm" />
-                      <span>Large Rims</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-3 w-3 bg-[#bfdbfe] border border-blue-300 rounded-sm" />
-                      <span>Small Rims</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-3 w-3 bg-slate-100 border border-slate-300 rounded-sm" />
-                      <span>Empty Cavity</span>
-                    </div>
-
-                    <button
-                      onClick={() => setShowTyreStore(!showTyreStore)}
-                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[10px] sm:text-xs transition font-semibold"
-                    >
-                      {showTyreStore ? 'HIDE TYRE STORE' : 'SHOW TYRE STORE'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Grid Container (Responsive & Stacking on Mobile) */}
-                <div className="w-full overflow-x-auto pb-1">
-                  <div className="flex flex-col lg:flex-row items-stretch gap-3 w-full min-w-[310px]">
-                    {/* RIM STOREROOM (Active - Bays L to G) */}
-                    <div className="flex-1 bg-slate-50 p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
-                      <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-200 pb-1.5">
-                        <span className="font-bold text-slate-900 uppercase">
-                          RIM STOREROOM (BAYS L-G, LEVELS 0-2)
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] text-blue-900 font-bold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                          BOTH SHUTTLES ACTIVE IN THIS ROOM
-                        </span>
+                  {/* 2. 2x2 Industrial Vitals Tiles (Touch-Optimized) */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Shuttle 1 */}
+                    <div className="bg-white border border-slate-300 p-2.5 rounded shadow-xs">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-slate-900">SHUTTLE 1</span>
+                        <span className="text-[8px] px-1 py-0.2 rounded bg-slate-100 border border-slate-300 text-slate-700">LOCKED</span>
                       </div>
-
-                      {[2, 1, 0].map((lvl) => (
-                        <div key={`rim-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
-                          <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5 sm:pr-1">
-                            L{lvl}
-                          </span>
-                          <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
-                            {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
-                              const slot = RIM_STOREROOM_CAVITIES.find(
-                                (c) => c.col === col && c.level === lvl
-                              );
-                              if (!slot) return <div key={`rim-${col}-${lvl}`} className="h-10 sm:h-14" />;
-
-                              const isShuttle1 = col === 'J' && lvl === 1;
-                              const isShuttle2 = col === 'H' && lvl === 0;
-
-                              let bgClass = 'bg-slate-100 border-slate-300 text-slate-400';
-                              if (slot.type === 'LARGE_RIM') {
-                                bgClass = 'bg-[#1e3a8a] border-[#0f172a] text-white';
-                              } else if (slot.type === 'SMALL_RIM') {
-                                bgClass = 'bg-[#bfdbfe] border-blue-300 text-blue-950 font-bold';
-                              }
-
-                              return (
-                                <div
-                                  key={`rim-${col}-${lvl}`}
-                                  className={`relative h-10 sm:h-14 rounded-sm border p-0.5 sm:p-1 flex flex-col justify-between ${bgClass}`}
-                                >
-                                  <div className="flex justify-between items-center text-[8px] sm:text-[9px] font-mono leading-none">
-                                    <span className="font-bold">{col}-{lvl}</span>
-                                    <span className="opacity-90 truncate max-w-[28px] sm:max-w-none">{slot.partCode}</span>
-                                  </div>
-
-                                  <div className="text-center font-mono font-bold text-[10px] sm:text-xs leading-none">
-                                    {slot.occupied}/{slot.capacity}
-                                  </div>
-
-                                  {isShuttle1 && (
-                                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
-                                      SHUTTLE 1
-                                    </div>
-                                  )}
-                                  {isShuttle2 && (
-                                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
-                                      SHUTTLE 2
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                      <div className="my-1.5">
+                        <div className="flex justify-between text-[10px] font-mono text-slate-600">
+                          <span>BATT</span>
+                          <span className="font-bold text-slate-900">{shuttles[0].battery_pct}%</span>
                         </div>
-                      ))}
+                        <div className="w-full bg-slate-200 h-1.5 rounded-xs overflow-hidden mt-0.5">
+                          <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[0].battery_pct}%` }} />
+                        </div>
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <span>BAY J-1</span>
+                        <span>8,840 KM</span>
+                      </div>
+                    </div>
 
-                      {/* Floor Column Labels */}
-                      <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-600 font-bold text-center">
-                        <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
-                        <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
-                          {['BAY L', 'BAY K', 'BAY J', 'BAY I', 'BAY H', 'BAY G'].map((bay) => (
-                            <div key={bay}>{bay}</div>
+                    {/* Shuttle 2 */}
+                    <div className="bg-white border border-slate-300 p-2.5 rounded shadow-xs">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-slate-900">SHUTTLE 2</span>
+                        <span className="text-[8px] px-1 py-0.2 rounded bg-blue-50 border border-blue-300 text-blue-900 font-bold">ACTIVE</span>
+                      </div>
+                      <div className="my-1.5">
+                        <div className="flex justify-between text-[10px] font-mono text-slate-600">
+                          <span>BATT</span>
+                          <span className="font-bold text-slate-900">{shuttles[1].battery_pct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-1.5 rounded-xs overflow-hidden mt-0.5">
+                          <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[1].battery_pct}%` }} />
+                        </div>
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <span>BAY H-0</span>
+                        <span>9,350 KM</span>
+                      </div>
+                    </div>
+
+                    {/* Daily Flow */}
+                    <div className="bg-white border border-slate-300 p-2.5 rounded shadow-xs">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-slate-900">DAILY FLOW</span>
+                        <span className="text-[8px] text-slate-500">ROUNDED</span>
+                      </div>
+                      <div className="my-1.5 space-y-1">
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="text-slate-600">INBOUND</span>
+                          <span className="font-bold text-slate-900">77</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="text-slate-600">OUTBOUND</span>
+                          <span className="font-bold text-slate-900">75</span>
+                        </div>
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <span>FLOW RATE</span>
+                        <span className="font-bold text-slate-800">77 IN • 75 OUT</span>
+                      </div>
+                    </div>
+
+                    {/* Usable Buffer */}
+                    <div className="bg-white border border-slate-300 p-2.5 rounded shadow-xs">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-slate-900">BUFFER</span>
+                        <span className="text-[8px] px-1 py-0.2 rounded bg-blue-50 border border-blue-200 text-blue-900 font-bold">READY</span>
+                      </div>
+                      <div className="my-1 text-center">
+                        <span className="text-xl font-mono font-bold text-slate-900">4.0</span>
+                        <span className="text-[9px] text-slate-500 font-mono ml-1">DAYS</span>
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <span>OCCUPIED</span>
+                        <span className="font-bold text-slate-800">348/464 (75%)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Storeroom Level Summary Card */}
+                  <div className="bg-white border border-slate-300 p-3 rounded space-y-2.5 shadow-xs">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 text-xs font-mono">
+                      <span className="font-bold text-slate-900 uppercase">STOREROOM LEVEL SUMMARY</span>
+                      <span className="text-[10px] text-blue-900 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                        348 PALLETS (75% FULL)
+                      </span>
+                    </div>
+
+                    {/* Level 2 Card */}
+                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
+                        <span>LEVEL 2 (TOP DECK)</span>
+                        <span className="text-slate-600">75 / 87 Pallets (86%)</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-2: 26/29 (5A6F100)</span>
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay J-2: 24/29 (5A6F119)</span>
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay I-2: 25/29 (5A90F90)</span>
+                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">L-2, H-2, G-2: Empty</span>
+                      </div>
+                    </div>
+
+                    {/* Level 1 Card */}
+                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
+                        <span className="flex items-center gap-1.5">
+                          LEVEL 1 (MID DECK)
+                          <span className="text-[8px] bg-white text-blue-900 border border-blue-400 px-1 rounded font-bold">SHUTTLE 1 AT J-1</span>
+                        </span>
+                        <span className="text-slate-600">135 / 145 Pallets (93%)</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay L-1: 25/29 (F117/118)</span>
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-1: 26/29 (5a19de0)</span>
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay J-1: 28/29 (5A90F91)</span>
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay I-1: 27/29 (F112/113)</span>
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay H-1: 29/29 (5A6F100)</span>
+                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">G-1: Empty</span>
+                      </div>
+                    </div>
+
+                    {/* Level 0 Card */}
+                    <div className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono space-y-1">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-900">
+                        <span className="flex items-center gap-1.5">
+                          LEVEL 0 (GROUND DECK)
+                          <span className="text-[8px] bg-white text-blue-900 border border-blue-400 px-1 rounded font-bold">SHUTTLE 2 AT H-0</span>
+                        </span>
+                        <span className="text-slate-600">138 / 145 Pallets (95%)</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay L-0: 27/29 (5A6F120)</span>
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay K-0: 26/29 (5A6F114)</span>
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay J-0: 28/29 (5A6F100)</span>
+                        <span className="bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-200 font-bold">Bay H-0: 29/29 (5A6F100)</span>
+                        <span className="bg-[#1e3a8a] text-white px-1.5 py-0.5 rounded">Bay G-0: 28/29 (5A6F113)</span>
+                        <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">I-0: Empty</span>
+                      </div>
+                    </div>
+
+                    {/* Button to view horizontal scrollable visual rack */}
+                    <button
+                      onClick={() => setMobileShowElevationGrid(!mobileShowElevationGrid)}
+                      className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[11px] font-mono transition text-center font-semibold"
+                    >
+                      {mobileShowElevationGrid ? '▲ Collapse Graphical Bay Grid' : '▼ View Horizontally Scrollable Bay Grid'}
+                    </button>
+
+                    {mobileShowElevationGrid && (
+                      <div className="overflow-x-auto pt-2 border-t border-slate-200">
+                        <div className="min-w-[480px] space-y-1.5">
+                          {[2, 1, 0].map((lvl) => (
+                            <div key={`m-lvl-${lvl}`} className="flex items-center gap-1">
+                              <span className="w-6 text-[9px] font-mono font-bold text-slate-500 text-right pr-0.5">L{lvl}</span>
+                              <div className="grid grid-cols-6 gap-1 flex-1">
+                                {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
+                                  const slot = RIM_STOREROOM_CAVITIES.find((c) => c.col === col && c.level === lvl);
+                                  if (!slot) return <div key={`m-${col}-${lvl}`} className="h-10" />;
+                                  const isShuttle1 = col === 'J' && lvl === 1;
+                                  const isShuttle2 = col === 'H' && lvl === 0;
+                                  let bgClass = 'bg-slate-100 border-slate-300 text-slate-400';
+                                  if (slot.type === 'LARGE_RIM') bgClass = 'bg-[#1e3a8a] text-white';
+                                  else if (slot.type === 'SMALL_RIM') bgClass = 'bg-[#bfdbfe] border-blue-300 text-blue-950 font-bold';
+                                  return (
+                                    <div key={`m-${col}-${lvl}`} className={`relative h-11 rounded-xs border p-0.5 flex flex-col justify-between ${bgClass}`}>
+                                      <div className="flex justify-between text-[8px] font-mono leading-none">
+                                        <span className="font-bold">{col}-{lvl}</span>
+                                        <span className="opacity-90 truncate max-w-[32px]">{slot.partCode}</span>
+                                      </div>
+                                      <div className="text-center font-mono font-bold text-[10px] leading-none">
+                                        {slot.occupied}/{slot.capacity}
+                                      </div>
+                                      {isShuttle1 && (
+                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
+                                          S1
+                                        </div>
+                                      )}
+                                      {isShuttle2 && (
+                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 rounded text-[7px] font-mono font-black shadow-xs whitespace-nowrap">
+                                          S2
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
+                    )}
+                  </div>
+
+                  {/* 4. Active Daily SKU Movement (Mobile Touch Cards) */}
+                  <div className="bg-white border border-slate-300 p-3 rounded space-y-2 shadow-xs">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 text-xs font-mono">
+                      <span className="font-bold text-slate-900 uppercase">DAILY SKU FLOW (ROUNDED)</span>
+                      <span className="text-[10px] font-bold text-slate-700">77 IN • 75 OUT</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {ACTIVE_CROSS_SECTION_SKUS.map((item) => (
+                        <div key={`m-sku-${item.code}`} className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-mono">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                              <span className={`w-2 h-2 rounded-full ${item.type === 'SMALL_RIM' ? 'bg-[#bfdbfe] border border-blue-400' : 'bg-[#1e3a8a]'}`} />
+                              {item.code}
+                            </span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-white border border-slate-200 text-slate-600 font-bold">
+                              {item.type === 'SMALL_RIM' ? 'Small Rim' : 'Large Rim'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-1 pt-1.5 mt-1 border-t border-slate-200 text-[10px] text-center">
+                            <div>
+                              <span className="text-slate-500 block text-[9px]">INBOUND</span>
+                              <strong className="text-blue-900">{item.arrivals}</strong>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 block text-[9px]">OUTBOUND</span>
+                              <strong className="text-slate-900">{item.dispatch}</strong>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 block text-[9px]">4D BUFFER</span>
+                              <strong className="text-slate-800">{item.buffer4d}</strong>
+                            </div>
+                          </div>
+                          <div className="text-[9px] text-slate-500 pt-1 mt-1 border-t border-slate-100 flex justify-between">
+                            <span>BAYS: {item.bays}</span>
+                            <span>BUFFER REQ: {item.buffer4d} PALLETS</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-slate-100 border border-slate-200 p-2 rounded text-[10px] font-mono text-slate-700 flex justify-between font-bold">
+                      <span>TOTALS (11 SKUS)</span>
+                      <span>77 IN • 75 OUT • 300 BUFFER REQ</span>
+                    </div>
+                  </div>
+
+                  {/* 5. Quick Dispatch Actions for Admin on Mobile */}
+                  <div className="bg-white border border-slate-300 p-3 rounded space-y-2 shadow-xs">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block border-b border-slate-200 pb-1">
+                      QUICK DISPATCH TOOLS
+                    </span>
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                      <button
+                        onClick={openAddPmAction}
+                        className="p-2 bg-[#172554] hover:bg-[#1e3a8a] text-blue-100 rounded border border-blue-900 font-bold transition text-left"
+                      >
+                        + Add PM Action
+                      </button>
+                      <button
+                        onClick={openManagerDocs}
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-300 font-semibold transition text-left"
+                      >
+                        Upload Documents
+                      </button>
+                      <button
+                        onClick={() => setIsOperatorModalOpen(true)}
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-300 font-semibold transition text-left"
+                      >
+                        Manage Users
+                      </button>
+                      <button
+                        onClick={() => setIsWeeklyRackModalOpen(true)}
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-300 font-semibold transition text-left"
+                      >
+                        Weekly Rack Check
+                      </button>
+                    </div>
+                    <Link
+                      href="/mobile"
+                      className="block text-center py-2 bg-[#0a192f] hover:bg-[#172554] text-white rounded font-mono text-xs font-bold transition mt-2 uppercase tracking-wider"
+                    >
+                      Go to Operator Inspection Gate →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                /* ========================================================
+                   WIDESCREEN DESKTOP SCADA VIEW (DETAILED CROSS-SECTION & TABLE)
+                   ======================================================== */
+                <>
+                  {/* 4 INDUSTRIAL VITALS TILES (NO FRILLS, CLEAN TYPOGRAPHY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* Tile 1: Shuttle 1 */}
+                    <div className="bg-white border border-slate-300 p-3.5 rounded">
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className="font-bold text-slate-900 font-mono">SHUTTLE 1 (RIM)</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-slate-300 bg-slate-100 text-slate-700">
+                          {shuttles[0].status}
+                        </span>
+                      </div>
+                      <div className="my-2">
+                        <div className="flex justify-between text-xs font-mono text-slate-600">
+                          <span>BATTERY</span>
+                          <span className="font-bold text-slate-900">{shuttles[0].battery_pct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
+                          <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[0].battery_pct}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
+                        <span>POSITION: BAY J (L1)</span>
+                        <span>ODO: 8,840 KM</span>
+                      </div>
                     </div>
 
-                    {/* TYRE STOREROOM (Clearly Visible When Toggled - Bays E to A) */}
-                    {showTyreStore && (
-                      <div className="flex-1 bg-slate-50 p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
-                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-300 pb-1.5">
-                          <span className="font-bold text-slate-800 uppercase">
-                            TYRE STOREROOM (BAYS E-A, LEVELS 0-3)
+                    {/* Tile 2: Shuttle 2 */}
+                    <div className="bg-white border border-slate-300 p-3.5 rounded">
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className="font-bold text-slate-900 font-mono">SHUTTLE 2 (RIM)</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-blue-300 bg-blue-50 text-blue-900 font-bold">
+                          ACTIVE
+                        </span>
+                      </div>
+                      <div className="my-2">
+                        <div className="flex justify-between text-xs font-mono text-slate-600">
+                          <span>BATTERY</span>
+                          <span className="font-bold text-slate-900">{shuttles[1].battery_pct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
+                          <div className="bg-[#1e3a8a] h-full" style={{ width: `${shuttles[1].battery_pct}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
+                        <span>POSITION: BAY H (L0)</span>
+                        <span>ODO: 9,350 KM</span>
+                      </div>
+                    </div>
+
+                    {/* Tile 3: Pallet Flow (No Upper Bounds, Averaged Daily Values Rounded Up) */}
+                    <div className="bg-white border border-slate-300 p-3.5 rounded">
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className="font-bold text-slate-900 font-mono">THROUGHPUT FLOW</span>
+                        <span className="text-[10px] font-mono text-slate-500">DAILY AVERAGE</span>
+                      </div>
+                      <div className="space-y-1.5 my-2">
+                        <div>
+                          <div className="flex justify-between text-[11px] font-mono">
+                            <span className="text-slate-600">INBOUND</span>
+                            <span className="font-bold text-slate-900 text-sm">77</span>
+                          </div>
+                          <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
+                            <div className="bg-[#1e3a8a] h-full" style={{ width: '77%' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[11px] font-mono">
+                            <span className="text-slate-600">OUTBOUND</span>
+                            <span className="font-bold text-slate-900 text-sm">75</span>
+                          </div>
+                          <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
+                            <div className="bg-slate-500 h-full" style={{ width: '75%' }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <span>ACTIVE PALLETS / DAY</span>
+                        <span className="font-bold text-slate-800">77 IN • 75 OUT</span>
+                      </div>
+                    </div>
+
+                    {/* Tile 4: Stock Buffer (~75% Full, 4 Days of Stock) */}
+                    <div className="bg-white border border-slate-300 p-3.5 rounded">
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className="font-bold text-slate-900 font-mono">USABLE BUFFER</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-blue-200 bg-blue-50 text-blue-900">
+                          READY
+                        </span>
+                      </div>
+                      <div className="my-2">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-mono font-bold text-slate-900">4.0</span>
+                          <span className="text-xs text-slate-500 font-mono">DAYS OF STOCK</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
+                          <div className="bg-[#1e3a8a] h-full" style={{ width: '75%' }} />
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
+                        <span>OCCUPIED</span>
+                        <span>348 / 464 PALLETS (75%)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CROSS-SECTIONAL ELEVATION VIEW */}
+                  <div className="bg-white border border-slate-300 p-2.5 sm:p-4 rounded space-y-3">
+                    <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
+                      <span className="font-bold uppercase tracking-wider text-slate-900 text-[11px] sm:text-xs">
+                        STORAGE RACKING CROSS-SECTIONAL ELEVATION
+                      </span>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-3 w-3 bg-[#1e3a8a] rounded-sm" />
+                          <span>Large Rims</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-3 w-3 bg-[#bfdbfe] border border-blue-300 rounded-sm" />
+                          <span>Small Rims</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-3 w-3 bg-slate-100 border border-slate-300 rounded-sm" />
+                          <span>Empty Cavity</span>
+                        </div>
+                        <button
+                          onClick={() => setShowTyreStore(!showTyreStore)}
+                          className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[10px] sm:text-xs transition font-semibold"
+                        >
+                          {showTyreStore ? 'Hide Tyre Storeroom' : 'Show Tyre Storeroom (Inactive)'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Both Racks Display */}
+                    <div className="flex flex-col lg:flex-row gap-4 items-start">
+                      {/* RIM STOREROOM (Active - Bays L to G) */}
+                      <div className="flex-1 bg-white p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
+                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-200 pb-1.5">
+                          <span className="font-bold text-slate-900 uppercase">
+                            RIM STOREROOM (ACTIVE • BAYS L-G, LEVELS 0-2)
                           </span>
-                          <span className="text-[9px] sm:text-[10px] text-slate-700 font-bold bg-slate-200 border border-slate-300 px-1.5 py-0.5 rounded">
-                            UNCOMMISSIONED • ZONE INACTIVE
+                          <span className="text-[10px] text-blue-900 font-bold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                            348 / 464 PALLETS (75% FULL)
                           </span>
                         </div>
 
-                        {[3, 2, 1, 0].map((lvl) => (
-                          <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
+                        {/* Levels: L2 (Top), L1 (Middle), L0 (Ground) */}
+                        {[2, 1, 0].map((lvl) => (
+                          <div key={`rim-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
                             <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5 sm:pr-1">
                               L{lvl}
                             </span>
-                            <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
-                              {['E', 'D', 'C', 'B', 'A'].map((col) => {
-                                const slot = TYRE_STOREROOM_CAVITIES.find(
+                            <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
+                              {['L', 'K', 'J', 'I', 'H', 'G'].map((col) => {
+                                const slot = RIM_STOREROOM_CAVITIES.find(
                                   (c) => c.col === col && c.level === lvl
                                 );
+                                if (!slot) return <div key={`rim-${col}-${lvl}`} className="h-10 sm:h-14" />;
+
+                                const isShuttle1 = col === 'J' && lvl === 1;
+                                const isShuttle2 = col === 'H' && lvl === 0;
+
+                                let bgClass = 'bg-slate-100 border-slate-300 text-slate-400';
+                                if (slot.type === 'LARGE_RIM') {
+                                  bgClass = 'bg-[#1e3a8a] border-[#0f172a] text-white';
+                                } else if (slot.type === 'SMALL_RIM') {
+                                  bgClass = 'bg-[#bfdbfe] border-blue-300 text-blue-950 font-bold';
+                                }
+
                                 return (
                                   <div
-                                    key={`tyre-${col}-${lvl}`}
-                                    className="h-10 sm:h-12 rounded-sm border border-slate-300 bg-white p-1 flex flex-col justify-between text-slate-700 font-mono text-[8px] sm:text-[9px]"
+                                    key={`rim-${col}-${lvl}`}
+                                    className={`relative h-10 sm:h-14 rounded-sm border p-0.5 sm:p-1 flex flex-col justify-between ${bgClass}`}
                                   >
-                                    <div className="flex justify-between leading-none">
-                                      <span className="font-bold text-slate-800">{col}-{lvl}</span>
-                                      <span className="truncate max-w-[28px] text-slate-400">{slot?.partCode || 'EMPTY'}</span>
+                                    <div className="flex justify-between items-center text-[8px] sm:text-[9px] font-mono leading-none">
+                                      <span className="font-bold">{col}-{lvl}</span>
+                                      <span className="opacity-90 truncate max-w-[28px] sm:max-w-none">{slot.partCode}</span>
                                     </div>
-                                    <div className="text-center font-bold text-[10px] sm:text-xs leading-none text-slate-600">
-                                      {slot?.occupied || 0}/29
+
+                                    <div className="text-center font-mono font-bold text-[10px] sm:text-xs leading-none">
+                                      {slot.occupied}/{slot.capacity}
                                     </div>
+
+                                    {isShuttle1 && (
+                                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
+                                        SHUTTLE 1
+                                      </div>
+                                    )}
+                                    {isShuttle2 && (
+                                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white text-[#1e3a8a] border border-blue-400 px-0.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black tracking-tight shadow-sm whitespace-nowrap">
+                                        SHUTTLE 2
+                                      </div>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -728,89 +978,141 @@ export default function TvKpiDashboard() {
                           </div>
                         ))}
 
+                        {/* Floor Column Labels */}
                         <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-600 font-bold text-center">
                           <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
-                          <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
-                            {['BAY E', 'BAY D', 'BAY C', 'BAY B', 'BAY A'].map((bay) => (
+                          <div className="grid grid-cols-6 gap-1 sm:gap-1.5 flex-1">
+                            {['BAY L', 'BAY K', 'BAY J', 'BAY I', 'BAY H', 'BAY G'].map((bay) => (
                               <div key={bay}>{bay}</div>
                             ))}
                           </div>
                         </div>
                       </div>
-                    )}
+
+                      {/* TYRE STOREROOM (Clearly Visible When Toggled - Bays E to A) */}
+                      {showTyreStore && (
+                        <div className="flex-1 bg-slate-50 p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
+                          <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-300 pb-1.5">
+                            <span className="font-bold text-slate-800 uppercase">
+                              TYRE STOREROOM (BAYS E-A, LEVELS 0-3)
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] text-slate-700 font-bold bg-slate-200 border border-slate-300 px-1.5 py-0.5 rounded">
+                              UNCOMMISSIONED • ZONE INACTIVE
+                            </span>
+                          </div>
+
+                          {[3, 2, 1, 0].map((lvl) => (
+                            <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
+                              <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5 sm:pr-1">
+                                L{lvl}
+                              </span>
+                              <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
+                                {['E', 'D', 'C', 'B', 'A'].map((col) => {
+                                  const slot = TYRE_STOREROOM_CAVITIES.find(
+                                    (c) => c.col === col && c.level === lvl
+                                  );
+                                  return (
+                                    <div
+                                      key={`tyre-${col}-${lvl}`}
+                                      className="h-10 sm:h-12 rounded-sm border border-slate-300 bg-white p-1 flex flex-col justify-between text-slate-700 font-mono text-[8px] sm:text-[9px]"
+                                    >
+                                      <div className="flex justify-between leading-none">
+                                        <span className="font-bold text-slate-800">{col}-{lvl}</span>
+                                        <span className="truncate max-w-[28px] text-slate-400">{slot?.partCode || 'EMPTY'}</span>
+                                      </div>
+                                      <div className="text-center font-bold text-[10px] sm:text-xs leading-none text-slate-600">
+                                        {slot?.occupied || 0}/29
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+
+                          <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-600 font-bold text-center">
+                            <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
+                            <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
+                              {['BAY E', 'BAY D', 'BAY C', 'BAY B', 'BAY A'].map((bay) => (
+                                <div key={bay}>{bay}</div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* ACTIVE SKU THROUGHPUT TABLE (CROSS-SECTION ASSIGNED ONLY) */}
-              <div className="bg-white border border-slate-300 p-3 sm:p-4 rounded space-y-3">
-                <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
-                  <div>
-                    <span className="font-bold text-slate-900 uppercase tracking-wider">
-                      DAILY SKU FLOW & STOCK (CROSS-SECTION ASSIGNED)
-                    </span>
-                    <span className="ml-2 text-[10px] text-slate-500">
-                      (Total Inbound: 71.5 | Outbound: 70.4 Pallets/Day)
-                    </span>
+                  {/* ACTIVE SKU THROUGHPUT TABLE (CROSS-SECTION ASSIGNED ONLY) */}
+                  <div className="bg-white border border-slate-300 p-3 sm:p-4 rounded space-y-3">
+                    <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
+                      <div>
+                        <span className="font-bold text-slate-900 uppercase tracking-wider">
+                          DAILY SKU FLOW & STOCK (CROSS-SECTION ASSIGNED)
+                        </span>
+                        <span className="ml-2 text-[10px] text-slate-500">
+                          (Total Inbound: 77 | Outbound: 75 Pallets/Day)
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-bold">
+                        4-DAY BUFFER: 300-348 PALLETS (~75% FULL)
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs font-mono">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 text-[10px] uppercase">
+                            <th className="py-1.5 px-2">SKU Code</th>
+                            <th className="py-1.5 px-2">Type / Category</th>
+                            <th className="py-1.5 px-2 text-right">Daily Inbound</th>
+                            <th className="py-1.5 px-2 text-right">Daily Outbound</th>
+                            <th className="py-1.5 px-2 text-center">Assigned Bays</th>
+                            <th className="py-1.5 px-2 text-right">4-Day Buffer Req</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-[11px]">
+                          {ACTIVE_CROSS_SECTION_SKUS.map((item) => (
+                            <tr key={item.code} className="hover:bg-slate-50 transition">
+                              <td className="py-1.5 px-2 font-bold text-slate-900 flex items-center gap-1.5">
+                                <span
+                                  className={`w-2 h-2 rounded-full inline-block ${
+                                    item.type === 'SMALL_RIM' ? 'bg-[#bfdbfe] border border-blue-400' : 'bg-[#1e3a8a]'
+                                  }`}
+                                />
+                                {item.code}
+                              </td>
+                              <td className="py-1.5 px-2 text-slate-600">{item.name}</td>
+                              <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.arrivals}</td>
+                              <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.dispatch}</td>
+                              <td className="py-1.5 px-2 text-center text-slate-700 font-semibold">{item.bays}</td>
+                              <td className="py-1.5 px-2 text-right text-slate-600">{item.buffer4d}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t-2 border-slate-300 font-bold text-slate-900 text-xs bg-slate-50">
+                            <td className="py-2 px-2" colSpan={2}>
+                              TOTALS (11 CROSS-SECTION SKUS)
+                            </td>
+                            <td className="py-2 px-2 text-right text-blue-900">77</td>
+                            <td className="py-2 px-2 text-right text-slate-900">75</td>
+                            <td className="py-2 px-2 text-center text-[10px] text-slate-600">16 Storage Lanes</td>
+                            <td className="py-2 px-2 text-right text-blue-950">300 Pallets</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    <div className="text-[10px] font-mono text-slate-500 pt-1 flex flex-wrap justify-between items-center gap-2 border-t border-slate-100">
+                      <span>Note: SKUs 5A6F115-01 (1 arr / 1 disp) and 5A6F116-01 (1 arr / 1 disp) excluded per directive (not on cross-section racking).</span>
+                      <span className="font-bold text-slate-700">STOREROOM: 348 / 464 PALLETS (75% FULL)</span>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-bold">
-                    4-DAY BUFFER: 282-348 PALLETS (~75% FULL)
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-slate-500 text-[10px] uppercase">
-                        <th className="py-1.5 px-2">SKU Code</th>
-                        <th className="py-1.5 px-2">Type / Category</th>
-                        <th className="py-1.5 px-2 text-right">Daily Inbound</th>
-                        <th className="py-1.5 px-2 text-right">Daily Outbound</th>
-                        <th className="py-1.5 px-2 text-center">Assigned Bays</th>
-                        <th className="py-1.5 px-2 text-right">4-Day Buffer Req</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-[11px]">
-                      {ACTIVE_CROSS_SECTION_SKUS.map((item) => (
-                        <tr key={item.code} className="hover:bg-slate-50 transition">
-                          <td className="py-1.5 px-2 font-bold text-slate-900 flex items-center gap-1.5">
-                            <span
-                              className={`w-2 h-2 rounded-full inline-block ${
-                                item.type === 'SMALL_RIM' ? 'bg-[#bfdbfe] border border-blue-400' : 'bg-[#1e3a8a]'
-                              }`}
-                            />
-                            {item.code}
-                          </td>
-                          <td className="py-1.5 px-2 text-slate-600">{item.name}</td>
-                          <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.arrivals}</td>
-                          <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.dispatch}</td>
-                          <td className="py-1.5 px-2 text-center text-slate-700 font-semibold">{item.bays}</td>
-                          <td className="py-1.5 px-2 text-right text-slate-600">{(item.dispatch * 4).toFixed(1)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="border-t-2 border-slate-300 font-bold text-slate-900 text-xs bg-slate-50">
-                        <td className="py-2 px-2" colSpan={2}>
-                          TOTALS (11 CROSS-SECTION SKUS)
-                        </td>
-                        <td className="py-2 px-2 text-right text-blue-900">71.5</td>
-                        <td className="py-2 px-2 text-right text-slate-900">70.4</td>
-                        <td className="py-2 px-2 text-center text-[10px] text-slate-600">16 Storage Lanes</td>
-                        <td className="py-2 px-2 text-right text-blue-950">281.6 Pallets</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                <div className="text-[10px] font-mono text-slate-500 pt-1 flex flex-wrap justify-between items-center gap-2 border-t border-slate-100">
-                  <span>Note: SKUs 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per directive (not on cross-section racking).</span>
-                  <span className="font-bold text-slate-700">STOREROOM: 348 / 464 PALLETS (75% FULL)</span>
-                </div>
-              </div>
+                </>
+              )}
             </>
           )}
-
           {/* TAB 2: MAINTENANCE CONTROL & 52-WEEK MATRIX */}
           {activeTab === 'MAINTENANCE' && (
             <div className="space-y-4">
