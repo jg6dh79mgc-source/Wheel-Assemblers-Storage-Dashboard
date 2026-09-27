@@ -1,50 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStoredOperators, saveOperator, setCurrentUser } from '@/lib/authStore';
+import { getStoredOperators, setCurrentUser } from '@/lib/authStore';
 
 export default function LoginPage() {
   const router = useRouter();
-
-  // Mode: 'login' | 'register'
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [hasExistingAccounts, setHasExistingAccounts] = useState<boolean>(true);
 
   // Sign-in fields
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Register fields
-  const [regUsername, setRegUsername] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [regName, setRegName] = useState('');
-
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const existing = getStoredOperators();
-    if (existing.length === 0) {
-      setHasExistingAccounts(false);
-      setMode('register');
-    } else {
-      setHasExistingAccounts(true);
-    }
-  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    setSuccessMsg('');
     setIsLoading(true);
 
     const operators = getStoredOperators();
     const cleanUser = username.trim().toLowerCase();
 
-    // Check credentials
+    // Check credentials against stored accounts
     const found = operators.find(
       (u) =>
         u.username.toLowerCase() === cleanUser &&
@@ -52,7 +30,23 @@ export default function LoginPage() {
     );
 
     if (!found) {
-      setErrorMsg('Invalid credentials. Operator & technician accounts must be provisioned by an Administrator.');
+      // Fallback check: if user created credentials or default admin
+      if (cleanUser === 'admin' && password === 'admin123' && operators.length === 0) {
+        const defaultAdmin = {
+          id: 'admin-primary',
+          username: 'admin',
+          password: 'admin123',
+          name: 'System Administrator',
+          role: 'ADMIN' as const,
+          shift: 'A',
+          active: true,
+          created_at: new Date().toISOString(),
+        };
+        setCurrentUser(defaultAdmin);
+        router.push('/tv');
+        return;
+      }
+      setErrorMsg('Invalid username or password. Access restricted to authorized personnel.');
       setIsLoading(false);
       return;
     }
@@ -64,46 +58,6 @@ export default function LoginPage() {
     } else {
       router.push('/mobile');
     }
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    if (!regUsername.trim() || !regPassword || !regName.trim()) {
-      setErrorMsg('All fields are required.');
-      return;
-    }
-
-    if (regPassword.length < 6) {
-      setErrorMsg('Password must be at least 6 characters.');
-      return;
-    }
-
-    if (regPassword !== regConfirmPassword) {
-      setErrorMsg('Passwords do not match.');
-      return;
-    }
-
-    const existing = getStoredOperators();
-    const cleanUser = regUsername.trim().toLowerCase();
-    if (existing.some((u) => u.username.toLowerCase() === cleanUser)) {
-      setErrorMsg(`Username "${regUsername}" is already in use.`);
-      return;
-    }
-
-    // Public registration is restricted to Administrator role only
-    const created = saveOperator({
-      username: regUsername.trim(),
-      password: regPassword,
-      name: regName.trim(),
-      role: 'ADMIN',
-    });
-
-    setCurrentUser(created);
-    setHasExistingAccounts(true);
-    router.push('/tv');
   };
 
   return (
@@ -120,36 +74,11 @@ export default function LoginPage() {
 
         {/* Authentication Card */}
         <div className="bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4">
-          <div className="border-b border-slate-200 pb-2.5 flex items-center justify-between">
+          <div className="border-b border-slate-200 pb-2.5">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-              {mode === 'login' ? 'System Sign-In' : hasExistingAccounts ? 'Create Admin Account' : 'Initial Admin Setup'}
+              System Sign-In
             </h2>
-            {hasExistingAccounts && (
-              <button
-                type="button"
-                onClick={() => {
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                  setMode(mode === 'login' ? 'register' : 'login');
-                }}
-                className="text-xs font-mono text-blue-900 hover:underline transition font-semibold"
-              >
-                {mode === 'login' ? 'Register Admin' : 'Back to Sign-In'}
-              </button>
-            )}
           </div>
-
-          {!hasExistingAccounts && mode === 'register' && (
-            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs font-mono">
-              No accounts registered. Please set up the primary Administrator account.
-            </div>
-          )}
-
-          {hasExistingAccounts && mode === 'register' && (
-            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-950 text-xs font-mono">
-              Self-registration is restricted to Administrators only. Operators and technicians must be provisioned by an Administrator in the Admin Portal.
-            </div>
-          )}
 
           {errorMsg && (
             <div className="p-2.5 rounded bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
@@ -157,108 +86,42 @@ export default function LoginPage() {
             </div>
           )}
 
-          {successMsg && (
-            <div className="p-2.5 rounded bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
-              {successMsg}
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-3.5">
+            <div>
+              <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                required
+                autoComplete="username"
+              />
             </div>
-          )}
 
-          {mode === 'login' ? (
-            /* Login Form */
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
-                <input
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                  autoComplete="username"
-                />
-              </div>
+            <div>
+              <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                required
+                autoComplete="current-password"
+              />
+            </div>
 
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition"
-              >
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </button>
-            </form>
-          ) : (
-            /* Registration Form */
-            <form onSubmit={handleRegister} className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Admin Username</label>
-                <input
-                  type="text"
-                  placeholder="e.g. admin_lead"
-                  value={regUsername}
-                  onChange={(e) => setRegUsername(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. System Administrator"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Password</label>
-                <input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Confirm Password</label>
-                <input
-                  type="password"
-                  placeholder="Re-enter password"
-                  value={regConfirmPassword}
-                  onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition mt-1"
-              >
-                Create Admin Account & Sign In
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition"
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
         </div>
 
         {/* Security Notice */}

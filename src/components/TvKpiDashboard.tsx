@@ -82,31 +82,48 @@ interface CavitySlot {
   capacity: number;
 }
 
-// Rim Storeroom (Bays L to G, Levels 0 to 2)
+// Rim Storeroom (Bays L to G, Levels 0 to 2) - 16 Storage Lanes, Total Capacity: 464 Pallets (29 per lane)
+// Configured to 75.0% Occupancy (348 Pallets / 4 Days of Stock Buffer)
 const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   // Level 2 (Top)
   { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 4, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 6, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 5, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 26, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: '5A6F119', occupied: 24, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: '5A90F90', occupied: 25, capacity: 29 },
   { store: 'RIM_STORE', col: 'H', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
   { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
 
   // Level 1 (Middle)
-  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 8, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 5, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 7, capacity: 29 }, // Shuttle 1
-  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 6, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 8, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: '5A6F117/118', occupied: 25, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19de0', occupied: 26, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: '5A90F91', occupied: 28, capacity: 29 }, // Shuttle 1
+  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: '5A6F112/113', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 29, capacity: 29 },
   { store: 'RIM_STORE', col: 'G', level: 1, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
 
   // Level 0 (Ground)
-  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 7, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 5, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 6, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: '5A6F120', occupied: 27, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: '5A6F114', occupied: 26, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 28, capacity: 29 },
   { store: 'RIM_STORE', col: 'I', level: 0, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 7, capacity: 29 }, // Shuttle 2
-  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 4, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: '5A6F100', occupied: 29, capacity: 29 }, // Shuttle 2
+  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: '5A6F113', occupied: 28, capacity: 29 },
+];
+
+// Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound)
+// Note: 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per operational directive
+const ACTIVE_CROSS_SECTION_SKUS = [
+  { code: '5a19de0-01', short: '5a19de0', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 1.8, dispatch: 1.8, bays: 'K-1' },
+  { code: '5A6F100-01', short: '5A6F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 33.7, dispatch: 33.5, bays: 'H-0, J-0, H-1, K-2' },
+  { code: '5A6F114-01', short: '5A6F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2.4, dispatch: 2.3, bays: 'K-0' },
+  { code: '5A90F90-01', short: '5A90F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 4.6, dispatch: 4.8, bays: 'I-2' },
+  { code: '5A90F91-01', short: '5A90F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 4.6, dispatch: 4.8, bays: 'J-1' },
+  { code: '5A6F112-01', short: '5A6F112', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 8.7, dispatch: 8.7, bays: 'I-1' },
+  { code: '5A6F113-01', short: '5A6F113', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 8.7, dispatch: 8.7, bays: 'G-0, I-1' },
+  { code: '5A6F117-01', short: '5A6F117', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 1.4, dispatch: 1.2, bays: 'L-1' },
+  { code: '5A6F118-01', short: '5A6F118', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 1.4, dispatch: 1.2, bays: 'L-1' },
+  { code: '5A6F119-01', short: '5A6F119', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2.1, dispatch: 1.7, bays: 'J-2' },
+  { code: '5A6F120-01', short: '5A6F120', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 2.1, dispatch: 1.7, bays: 'L-0' },
 ];
 
 // Tyre Storeroom (Permanently Greyed Out, Bays E to A, Levels 0 to 3)
@@ -506,39 +523,39 @@ export default function TvKpiDashboard() {
                   </div>
                 </div>
 
-                {/* Tile 3: Pallet Flow Limit 120 In / 93 Out */}
+                {/* Tile 3: Pallet Flow (No Upper Bounds, Averaged Daily Values) */}
                 <div className="bg-white border border-slate-300 p-3.5 rounded">
                   <div className="flex justify-between items-baseline text-xs">
                     <span className="font-bold text-slate-900 font-mono">THROUGHPUT FLOW</span>
-                    <span className="text-[10px] font-mono text-slate-500">MAX 120 IN / 93 OUT</span>
+                    <span className="text-[10px] font-mono text-slate-500">DAILY AVERAGE</span>
                   </div>
                   <div className="space-y-1.5 my-2">
                     <div>
                       <div className="flex justify-between text-[11px] font-mono">
                         <span className="text-slate-600">INBOUND</span>
-                        <span className="font-bold text-slate-900">18 / 120</span>
+                        <span className="font-bold text-slate-900 text-sm">72</span>
                       </div>
                       <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-[#1e3a8a] h-full" style={{ width: `${(18 / 120) * 100}%` }} />
+                        <div className="bg-[#1e3a8a] h-full" style={{ width: '72%' }} />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[11px] font-mono">
                         <span className="text-slate-600">OUTBOUND</span>
-                        <span className="font-bold text-slate-900">14 / 93</span>
+                        <span className="font-bold text-slate-900 text-sm">70</span>
                       </div>
                       <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-slate-400 h-full" style={{ width: `${(14 / 93) * 100}%` }} />
+                        <div className="bg-slate-400 h-full" style={{ width: '70%' }} />
                       </div>
                     </div>
                   </div>
                   <div className="text-[11px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
-                    <span>CAPACITY UTILIZATION</span>
-                    <span className="font-bold text-slate-800">15% IN • 15% OUT</span>
+                    <span>ACTIVE PALLETS / DAY</span>
+                    <span className="font-bold text-slate-800">72 IN • 70 OUT</span>
                   </div>
                 </div>
 
-                {/* Tile 4: Stock Buffer */}
+                {/* Tile 4: Stock Buffer (~75% Full, 4 Days of Stock) */}
                 <div className="bg-white border border-slate-300 p-3.5 rounded">
                   <div className="flex justify-between items-baseline text-xs">
                     <span className="font-bold text-slate-900 font-mono">USABLE BUFFER</span>
@@ -548,16 +565,16 @@ export default function TvKpiDashboard() {
                   </div>
                   <div className="my-2">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-mono font-bold text-slate-900">2.4</span>
-                      <span className="text-xs text-slate-500 font-mono">DAYS AVAILABLE</span>
+                      <span className="text-2xl font-mono font-bold text-slate-900">4.0</span>
+                      <span className="text-xs text-slate-500 font-mono">DAYS OF STOCK</span>
                     </div>
                     <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
-                      <div className="bg-[#1e3a8a] h-full" style={{ width: '15%' }} />
+                      <div className="bg-[#1e3a8a] h-full" style={{ width: '75%' }} />
                     </div>
                   </div>
                   <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
                     <span>OCCUPIED</span>
-                    <span>78 / 522 PALLETS (15%)</span>
+                    <span>348 / 464 PALLETS (75%)</span>
                   </div>
                 </div>
               </div>
@@ -722,6 +739,73 @@ export default function TvKpiDashboard() {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* ACTIVE SKU THROUGHPUT TABLE (CROSS-SECTION ASSIGNED ONLY) */}
+              <div className="bg-white border border-slate-300 p-3 sm:p-4 rounded space-y-3">
+                <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2 text-xs font-mono">
+                  <div>
+                    <span className="font-bold text-slate-900 uppercase tracking-wider">
+                      DAILY SKU FLOW & STOCK (CROSS-SECTION ASSIGNED)
+                    </span>
+                    <span className="ml-2 text-[10px] text-slate-500">
+                      (Total Inbound: 71.5 | Outbound: 70.4 Pallets/Day)
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-bold">
+                    4-DAY BUFFER: 282-348 PALLETS (~75% FULL)
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500 text-[10px] uppercase">
+                        <th className="py-1.5 px-2">SKU Code</th>
+                        <th className="py-1.5 px-2">Type / Category</th>
+                        <th className="py-1.5 px-2 text-right">Daily Inbound</th>
+                        <th className="py-1.5 px-2 text-right">Daily Outbound</th>
+                        <th className="py-1.5 px-2 text-center">Assigned Bays</th>
+                        <th className="py-1.5 px-2 text-right">4-Day Buffer Req</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-[11px]">
+                      {ACTIVE_CROSS_SECTION_SKUS.map((item) => (
+                        <tr key={item.code} className="hover:bg-slate-50 transition">
+                          <td className="py-1.5 px-2 font-bold text-slate-900 flex items-center gap-1.5">
+                            <span
+                              className={`w-2 h-2 rounded-full inline-block ${
+                                item.type === 'SMALL_RIM' ? 'bg-[#bfdbfe] border border-blue-400' : 'bg-[#1e3a8a]'
+                              }`}
+                            />
+                            {item.code}
+                          </td>
+                          <td className="py-1.5 px-2 text-slate-600">{item.name}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.arrivals}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-slate-800">{item.dispatch}</td>
+                          <td className="py-1.5 px-2 text-center text-slate-700 font-semibold">{item.bays}</td>
+                          <td className="py-1.5 px-2 text-right text-slate-600">{(item.dispatch * 4).toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-slate-300 font-bold text-slate-900 text-xs bg-slate-50">
+                        <td className="py-2 px-2" colSpan={2}>
+                          TOTALS (11 CROSS-SECTION SKUS)
+                        </td>
+                        <td className="py-2 px-2 text-right text-blue-900">71.5</td>
+                        <td className="py-2 px-2 text-right text-slate-900">70.4</td>
+                        <td className="py-2 px-2 text-center text-[10px] text-slate-600">16 Storage Lanes</td>
+                        <td className="py-2 px-2 text-right text-blue-950">281.6 Pallets</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <div className="text-[10px] font-mono text-slate-500 pt-1 flex flex-wrap justify-between items-center gap-2 border-t border-slate-100">
+                  <span>Note: SKUs 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per directive (not on cross-section racking).</span>
+                  <span className="font-bold text-slate-700">STOREROOM: 348 / 464 PALLETS (75% FULL)</span>
                 </div>
               </div>
             </>
