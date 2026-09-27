@@ -6,6 +6,15 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
 import { DocumentItem } from '@/lib/documentStore';
+import {
+  getStoredMaintenanceTasks,
+  updateMaintenanceTaskStatus,
+  getStoredShuttleResolution,
+  saveShuttleResolution,
+  getStoredSensorResolution,
+  resolveSensorCleaning,
+  MaintenanceTask,
+} from '@/lib/maintenanceStore';
 import OperatorManagementModal from './OperatorManagementModal';
 import AdminDocumentAndMaintenanceModal from './AdminDocumentAndMaintenanceModal';
 import YearlyMaintenanceMatrix from './YearlyMaintenanceMatrix';
@@ -110,7 +119,7 @@ const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 24, capacity: 29 },
 ];
 
-// Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound, Rounded Up to Integers)
+// Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound, Averaged Daily Values)
 // Note: 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per operational directive
 const ACTIVE_CROSS_SECTION_SKUS = [
   { code: '5a19de0-01', short: '5a19d', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'K-1' },
@@ -178,6 +187,31 @@ export default function TvKpiDashboard() {
   const [adminViewMode, setAdminViewMode] = useState<'DESKTOP' | 'MOBILE'>('DESKTOP');
   const [mobileShowElevationGrid, setMobileShowElevationGrid] = useState<boolean>(false);
 
+  // Technician Resolution and Maintenance State
+  const [currentUser, setCurrentUserState] = useState(getCurrentUser());
+  const [shuttle1Resolution, setShuttle1Resolution] = useState(getStoredShuttleResolution('1'));
+  const [sensorResolution, setSensorResolution] = useState(getStoredSensorResolution('2'));
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
+
+  const refreshResolutionData = () => {
+    const s1Res = getStoredShuttleResolution('1');
+    const sensRes = getStoredSensorResolution('2');
+    const tasks = getStoredMaintenanceTasks();
+    setShuttle1Resolution(s1Res);
+    setSensorResolution(sensRes);
+    setMaintenanceTasks(tasks);
+
+    if (s1Res && s1Res.status === 'ACTIVE') {
+      setShuttles((prev) =>
+        prev.map((s) =>
+          s.id === '11111111-1111-1111-1111-111111111111' || s.code === 'SHUTTLE-01'
+            ? { ...s, status: 'ACTIVE', last_inspection_passed: true }
+            : s
+        )
+      );
+    }
+  };
+
   // Shuttles state (Both in Rim Storeroom)
   const [shuttles, setShuttles] = useState<ShuttleData[]>([
     {
@@ -240,7 +274,12 @@ export default function TvKpiDashboard() {
     }
 
     fetchShuttleTelemetry();
-    return () => clearInterval(timer);
+    refreshResolutionData();
+    const resInterval = setInterval(refreshResolutionData, 2500);
+    return () => {
+      clearInterval(timer);
+      clearInterval(resInterval);
+    };
   }, []);
 
   const handleSignOut = () => {
@@ -248,9 +287,11 @@ export default function TvKpiDashboard() {
     router.push('/');
   };
 
-  // Emergency Alert check (Red only for true emergency)
-  const hasInspectionAlert = shuttles[0].status === 'LOCKED_PENDING_INSPECTION';
-  const hasOverdueSensorEmergency = true; // Overdue optical sensors > 7 days
+  // Technician Resolution & Emergency Alert Evaluation
+  const isShuttle1Resolved = shuttle1Resolution?.status === 'ACTIVE';
+  const isSensorResolved = sensorResolution?.cleaned === true;
+  const hasInspectionAlert = !isShuttle1Resolved && shuttles[0].status === 'LOCKED_PENDING_INSPECTION';
+  const hasOverdueSensorEmergency = !isSensorResolved;
   const emergencyCount = (hasInspectionAlert ? 1 : 0) + (hasOverdueSensorEmergency ? 1 : 0);
 
   const openAddPmAction = () => {
@@ -265,47 +306,50 @@ export default function TvKpiDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-800 font-sans flex flex-col select-none">
-      {/* 1. TOP SLEEK CONTROL BAR */}
-      <header className="bg-[#0a192f] text-white px-4 py-2.5 border-b border-slate-800 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center gap-3">
+      {/* 1. TOP SLEEK CONTROL BAR (RESPONSIVE - ALERTS NEVER OUT OF FRAME) */}
+      <header className="bg-[#0a192f] text-white px-2.5 sm:px-4 py-2 sm:py-2.5 border-b border-slate-800 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Collapsible Sidebar Toggle Button */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="px-2.5 py-1 bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded font-mono text-xs uppercase transition tracking-wider"
+            className="px-2 sm:px-2.5 py-1 bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded font-mono text-[10px] sm:text-xs uppercase transition tracking-wider shrink-0"
             title="Toggle side menu navigation"
           >
-            {isSidebarOpen ? 'COLLAPSE MENU' : 'EXPAND MENU'}
+            <span className="hidden sm:inline">{isSidebarOpen ? 'COLLAPSE MENU' : 'EXPAND MENU'}</span>
+            <span className="sm:hidden">{isSidebarOpen ? 'CLOSE' : 'MENU'}</span>
           </button>
 
-          <div className="flex items-center gap-2 border-l border-slate-700 pl-3">
-            <span className="font-bold text-white tracking-wider text-sm uppercase">WHEEL ASSEMBLERS</span>
-            <span className="text-[10px] font-mono text-slate-400">STORAGE CONTROL SYSTEM</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 border-l border-slate-700 pl-2 sm:pl-3">
+            <span className="font-bold text-white tracking-wider text-xs sm:text-sm uppercase whitespace-nowrap font-mono">
+              WHEEL ASSEMBLERS
+            </span>
+            <span className="text-[10px] font-mono text-slate-400 hidden lg:inline">
+              STORAGE CONTROL SYSTEM
+            </span>
           </div>
         </div>
 
         {/* Right Info: View Switcher, Time & Emergency Indicator */}
-        <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 text-xs font-mono shrink-0">
           {/* Desktop vs Mobile Orientation Switcher */}
           <button
             onClick={() => setAdminViewMode(adminViewMode === 'DESKTOP' ? 'MOBILE' : 'DESKTOP')}
-            className="px-2.5 py-1 bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded font-mono text-[11px] font-bold transition flex items-center gap-1"
+            className="px-2 sm:px-2.5 py-1 bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded font-mono text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 shrink-0"
             title="Toggle Desktop or Mobile orientation preview"
           >
-            <span className="text-slate-400 hidden xs:inline">VIEW:</span>
-            <span className={adminViewMode === 'MOBILE' ? 'text-white underline' : 'text-blue-200'}>
-              {adminViewMode}
-            </span>
+            <span className="text-slate-400 hidden md:inline">VIEW:</span>
+            <span>{adminViewMode}</span>
           </button>
 
-          <span className="text-slate-400 hidden md:inline">{currentTime || '08:00:00'}</span>
+          <span className="text-slate-400 hidden lg:inline">{currentTime || '08:00:00'}</span>
 
-          {/* Emergency Alert Indicator (Red only for critical items) */}
-          <div className="relative">
+          {/* Emergency Alert Indicator (Always Visible & In-Frame) */}
+          <div className="relative shrink-0">
             <button
               onClick={() => setIsAlertsOpen(!isAlertsOpen)}
-              className={`px-2 py-1 sm:px-2.5 rounded text-xs font-mono font-bold border transition ${
+              className={`px-2 py-1 sm:px-2.5 rounded text-[10px] sm:text-xs font-mono font-bold border transition whitespace-nowrap ${
                 emergencyCount > 0
-                  ? 'bg-red-900/60 text-red-200 border-red-700 hover:bg-red-900'
+                  ? 'bg-red-900/80 text-red-100 border-red-600 hover:bg-red-900'
                   : 'bg-[#172554] text-blue-200 border-blue-900 hover:bg-[#1e3a8a]'
               }`}
             >
@@ -313,7 +357,7 @@ export default function TvKpiDashboard() {
             </button>
 
             {isAlertsOpen && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-300 rounded shadow-2xl p-4 z-50 space-y-3 text-xs text-slate-800">
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-300 rounded shadow-2xl p-3 sm:p-4 z-50 space-y-3 text-xs text-slate-800">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="font-bold uppercase tracking-wider font-mono text-slate-900 text-[11px]">
                     System Action Dispatches
@@ -327,35 +371,86 @@ export default function TvKpiDashboard() {
                 </div>
 
                 <div className="space-y-2">
-                  {hasInspectionAlert && (
+                  {/* Shuttle 1 Inspection Condition */}
+                  {hasInspectionAlert ? (
                     <div className="p-2.5 bg-slate-50 border border-slate-300 rounded space-y-1">
                       <div className="font-semibold text-slate-800 text-[11px]">
                         Shuttle 1 pending FR-7.2-04 pre-operational sign-off. Electronic interlock active.
                       </div>
-                      <Link
-                        href="/mobile"
-                        onClick={() => setIsAlertsOpen(false)}
-                        className="inline-block text-[11px] font-mono font-bold text-[#1e3a8a] underline"
-                      >
-                        OPEN OPERATOR GATE
-                      </Link>
+                      <div className="flex justify-between items-center pt-1">
+                        <Link
+                          href="/mobile"
+                          onClick={() => setIsAlertsOpen(false)}
+                          className="text-[11px] font-mono font-bold text-[#1e3a8a] underline"
+                        >
+                          OPEN OPERATOR GATE
+                        </Link>
+                        <button
+                          onClick={() => {
+                            saveShuttleResolution({
+                              shuttle_id: '1',
+                              inspection_passed: true,
+                              status: 'ACTIVE',
+                              technician_name: currentUser?.name || 'Lead Technician',
+                              resolved_at: new Date().toISOString(),
+                              notes: 'Direct supervisory override & unlock.',
+                            });
+                            refreshResolutionData();
+                          }}
+                          className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-700 font-mono text-[10px] font-bold"
+                        >
+                          Unlock Interlock
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 bg-blue-50 border border-blue-200 rounded space-y-1">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-blue-900">PRE-OP INSPECTION (FR-7.2-04)</span>
+                        <span className="px-1.5 py-0.2 rounded bg-white text-blue-900 font-bold border border-blue-300">RESOLVED</span>
+                      </div>
+                      <div className="text-slate-800 text-[11px] font-medium">
+                        Shuttle 1 interlock released. Verified by technician <strong>{shuttle1Resolution?.technician_name || 'Technician'}</strong> at {shuttle1Resolution?.resolved_at ? new Date(shuttle1Resolution.resolved_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00'}.
+                      </div>
                     </div>
                   )}
 
-                  {hasOverdueSensorEmergency && (
+                  {/* Shuttle 2 Optical Sensor Condition */}
+                  {hasOverdueSensorEmergency ? (
                     <div className="p-2.5 bg-red-50 border border-red-200 rounded space-y-1 text-red-900">
                       <div className="font-bold text-[11px]">
                         CRITICAL: Shuttle 2 optical sensors cleanliness limit exceeded (8/7 days).
                       </div>
-                      <button
-                        onClick={() => {
-                          setActiveTab('MAINTENANCE');
-                          setIsAlertsOpen(false);
-                        }}
-                        className="text-[11px] font-mono font-bold text-red-700 underline block"
-                      >
-                        DISPATCH PM MAINTENANCE
-                      </button>
+                      <div className="flex justify-between items-center pt-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab('MAINTENANCE');
+                            setIsAlertsOpen(false);
+                          }}
+                          className="text-[11px] font-mono font-bold text-red-700 underline"
+                        >
+                          VIEW IN MAINTENANCE
+                        </button>
+                        <button
+                          onClick={() => {
+                            resolveSensorCleaning('2', currentUser?.name || 'Lead Technician');
+                            refreshResolutionData();
+                          }}
+                          className="px-2 py-0.5 rounded bg-white border border-red-300 text-red-800 font-mono text-[10px] font-bold"
+                        >
+                          Sign-off Cleaned
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 bg-blue-50 border border-blue-200 rounded space-y-1">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="font-bold text-blue-900">OPTICAL SENSORS (SHUTTLE 2)</span>
+                        <span className="px-1.5 py-0.2 rounded bg-white text-blue-900 font-bold border border-blue-300">RESOLVED</span>
+                      </div>
+                      <div className="text-slate-800 text-[11px] font-medium">
+                        Cleaned & optical calibration confirmed by technician <strong>{sensorResolution?.technician_name || 'Technician'}</strong> at {sensorResolution?.cleaned_at ? new Date(sensorResolution.cleaned_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00'}. Interval reset (0/7 days).
+                      </div>
                     </div>
                   )}
                 </div>
@@ -482,15 +577,25 @@ export default function TvKpiDashboard() {
                    EXECUTIVE MOBILE SUMMARY VIEW (CLEAN, SUMMARIZED, TOUCH-OPTIMIZED)
                    ======================================================== */
                 <div className="space-y-3 font-sans">
-                  {/* 1. Mobile Executive Header Banner */}
-                  <div className="bg-[#0a192f] text-white p-3 rounded flex justify-between items-center border border-slate-800">
-                    <div>
-                      <span className="text-[9px] font-mono uppercase text-slate-400 block tracking-wider">EXECUTIVE MOBILE VIEW</span>
-                      <span className="text-xs font-bold font-mono">WHEEL ASSEMBLERS SCADA</span>
+                  {/* 1. Mobile Executive Header Banner (Spacious, Roomy & Uncompressed) */}
+                  <div className="bg-[#0a192f] text-white p-4 rounded-md border border-slate-700 shadow-sm space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <span className="text-[10px] font-mono uppercase text-blue-300 font-semibold tracking-wider block">
+                          PLANT SCADA • RIM STOREROOM
+                        </span>
+                        <h2 className="text-base font-bold font-mono text-white tracking-wide">
+                          WHEEL ASSEMBLERS
+                        </h2>
+                      </div>
+                      <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-[#172554] border border-blue-700 text-blue-200 font-bold shrink-0">
+                        75% BUFFER
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900 border border-blue-700 text-blue-200 font-bold">
-                      ROOM 75% FULL
-                    </span>
+                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 pt-1.5 border-t border-slate-800">
+                      <span>CAPACITY: 464 PALLETS</span>
+                      <span className="text-slate-300 font-bold">348 OCCUPIED (4.0 DAYS)</span>
+                    </div>
                   </div>
 
                   {/* 2. 2x2 Industrial Vitals Tiles (Touch-Optimized) */}
@@ -541,7 +646,7 @@ export default function TvKpiDashboard() {
                     <div className="bg-white border border-slate-300 p-2.5 rounded shadow-xs">
                       <div className="flex justify-between items-center text-[10px] font-mono">
                         <span className="font-bold text-slate-900">DAILY FLOW</span>
-                        <span className="text-[8px] text-slate-500">ROUNDED</span>
+                        <span className="text-[8px] text-slate-500">PALLETS</span>
                       </div>
                       <div className="my-1.5 space-y-1">
                         <div className="flex justify-between text-[10px] font-mono">
@@ -596,10 +701,6 @@ export default function TvKpiDashboard() {
                       <div className="flex items-center gap-1.5">
                         <span className="w-3 h-3 bg-[#ffedd5] border border-[#ea580c] rounded-xs" />
                         <span className="text-slate-700 font-semibold">Large Rim</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-3 h-3 bg-white border border-dashed border-slate-300 rounded-xs" />
-                        <span className="text-slate-400">Stepped Roof Void</span>
                       </div>
                     </div>
 
@@ -669,7 +770,7 @@ export default function TvKpiDashboard() {
                   {/* 4. Active Daily SKU Movement (Mobile Touch Cards) */}
                   <div className="bg-white border border-slate-300 p-3 rounded space-y-2 shadow-xs">
                     <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 text-xs font-mono">
-                      <span className="font-bold text-slate-900 uppercase">DAILY SKU FLOW (ROUNDED)</span>
+                      <span className="font-bold text-slate-900 uppercase">DAILY SKU FLOW</span>
                       <span className="text-[10px] font-bold text-slate-700">77 IN • 75 OUT</span>
                     </div>
                     <div className="space-y-1.5">
@@ -803,7 +904,7 @@ export default function TvKpiDashboard() {
                       </div>
                     </div>
 
-                    {/* Tile 3: Pallet Flow (No Upper Bounds, Averaged Daily Values Rounded Up) */}
+                    {/* Tile 3: Pallet Flow (No Upper Bounds, Averaged Daily Values) */}
                     <div className="bg-white border border-slate-300 p-3.5 rounded">
                       <div className="flex justify-between items-baseline text-xs">
                         <span className="font-bold text-slate-900 font-mono">THROUGHPUT FLOW</span>
@@ -873,10 +974,6 @@ export default function TvKpiDashboard() {
                         <div className="flex items-center gap-1.5">
                           <span className="h-3 w-3 bg-[#ffedd5] border border-[#ea580c] rounded-sm" />
                           <span className="font-semibold text-slate-700">Large Rims</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 bg-white border border-dashed border-slate-300 rounded-sm" />
-                          <span className="text-slate-400">Stepped Roof Void</span>
                         </div>
                         <button
                           onClick={() => setShowTyreStore(!showTyreStore)}
@@ -1145,14 +1242,18 @@ export default function TvKpiDashboard() {
                   </div>
                 </div>
 
-                {/* Shuttle 2 (Critical Sensor Condition highlighted in Red) */}
+                {/* Shuttle 2 (Reflects Technician Resolution on Optical Sensors) */}
                 <div className="bg-white border border-slate-300 p-4 rounded space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                     <span className="text-xs font-bold text-slate-900 font-mono uppercase">
                       Shuttle 2 Component Telemetry
                     </span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-red-300 bg-red-50 text-red-800 font-bold">
-                      ACTION REQUIRED
+                    <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded border font-bold ${
+                      isSensorResolved
+                        ? 'border-blue-200 bg-blue-50 text-blue-900'
+                        : 'border-red-300 bg-red-50 text-red-800'
+                    }`}>
+                      {isSensorResolved ? 'NOMINAL' : 'ACTION REQUIRED'}
                     </span>
                   </div>
 
@@ -1177,12 +1278,81 @@ export default function TvKpiDashboard() {
                     />
                     <EngineeringGauge
                       label="Optical Sensors"
-                      value={8}
+                      value={isSensorResolved ? 0 : 8}
                       max={7}
-                      sublabel="8 / 7 days (OVERDUE)"
-                      isEmergency={true}
+                      sublabel={
+                        isSensorResolved
+                          ? `0 / 7 days (Cleaned by ${sensorResolution?.technician_name || 'Technician'})`
+                          : '8 / 7 days (OVERDUE)'
+                      }
+                      isEmergency={!isSensorResolved}
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Technician Maintenance Action Dispatches */}
+              <div className="bg-white border border-slate-300 p-4 rounded space-y-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                  <span className="text-xs font-bold text-slate-900 font-mono uppercase">
+                    Technician Maintenance Tasks & Resolutions
+                  </span>
+                  <button
+                    onClick={openAddPmAction}
+                    className="px-2.5 py-1 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded text-[11px] font-mono font-bold transition"
+                  >
+                    + Schedule PM Task
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {maintenanceTasks.map((t) => {
+                    const isDone = t.status === 'COMPLETED';
+                    return (
+                      <div
+                        key={t.id}
+                        className={`p-3 rounded border text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition ${
+                          isDone ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900">{t.task_title}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold">• {t.shuttle}</span>
+                            <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                              isDone
+                                ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                                : t.priority === 'CRITICAL'
+                                ? 'bg-red-100 text-red-800 border border-red-300'
+                                : 'bg-slate-200 text-slate-700'
+                            }`}>
+                              {t.status}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-600">
+                            Trigger: <strong className="text-slate-800">{t.threshold_metric}</strong> • Target: {t.component}
+                          </div>
+                          {isDone && (
+                            <div className="text-[10px] text-blue-900 font-bold">
+                              ✓ Resolved by technician {t.completed_by} ({t.completed_at ? new Date(t.completed_at).toLocaleDateString() : 'Today'})
+                            </div>
+                          )}
+                        </div>
+
+                        {!isDone && (
+                          <button
+                            onClick={() => {
+                              updateMaintenanceTaskStatus(t.id, 'COMPLETED', currentUser?.name || 'Lead Technician');
+                              refreshResolutionData();
+                            }}
+                            className="px-3 py-1.5 rounded bg-white hover:bg-blue-50 text-[#1e3a8a] border border-blue-300 font-mono text-[11px] font-bold transition shrink-0"
+                          >
+                            Mark Completed
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

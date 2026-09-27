@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setIsLoading(true);
@@ -22,30 +22,56 @@ export default function LoginPage() {
     const operators = getStoredOperators();
     const cleanUser = username.trim().toLowerCase();
 
-    // Check credentials against stored accounts
-    const found = operators.find(
+    // 1. Check credentials against stored local accounts
+    let found = operators.find(
       (u) =>
         u.username.toLowerCase() === cleanUser &&
         u.password === password
     );
 
+    // 2. If not found in local storage, check remote Supabase operators table for shared login across devices
     if (!found) {
-      // Fallback check: if user created credentials or default admin
-      if (cleanUser === 'admin' && password === 'admin123' && operators.length === 0) {
-        const defaultAdmin = {
-          id: 'admin-primary',
-          username: 'admin',
-          password: 'admin123',
-          name: 'System Administrator',
-          role: 'ADMIN' as const,
-          shift: 'A',
-          active: true,
-          created_at: new Date().toISOString(),
-        };
-        setCurrentUser(defaultAdmin);
-        router.push('/tv');
-        return;
-      }
+      try {
+        const { supabase } = await import('@/lib/supabaseClient');
+        const { data: dbOp } = await supabase
+          .from('operators')
+          .select('*')
+          .eq('username', cleanUser)
+          .maybeSingle();
+
+        if (dbOp && (!dbOp.password || dbOp.password === password)) {
+          found = {
+            id: dbOp.id,
+            username: dbOp.username,
+            name: dbOp.name,
+            role: dbOp.role,
+            shift: dbOp.shift || 'Default Shift',
+            active: dbOp.active ?? true,
+            created_at: dbOp.created_at || new Date().toISOString(),
+          };
+          const { saveOperator } = await import('@/lib/authStore');
+          saveOperator(found);
+        }
+      } catch {}
+    }
+
+    // 3. Fallback default administrator credentials
+    if (!found && cleanUser === 'admin' && password === 'admin123') {
+      found = {
+        id: 'admin-primary',
+        username: 'admin',
+        password: 'admin123',
+        name: 'System Administrator',
+        role: 'ADMIN' as const,
+        shift: 'A',
+        active: true,
+        created_at: new Date().toISOString(),
+      };
+      const { saveOperator } = await import('@/lib/authStore');
+      saveOperator(found);
+    }
+
+    if (!found) {
       setErrorMsg('Invalid username or password. Access restricted to authorized personnel.');
       setIsLoading(false);
       return;

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
 import { getStoredDocuments, DocumentItem } from '@/lib/documentStore';
-import { getStoredMaintenanceTasks, updateMaintenanceTaskStatus, MaintenanceTask } from '@/lib/maintenanceStore';
+import { getStoredMaintenanceTasks, updateMaintenanceTaskStatus, saveShuttleResolution, MaintenanceTask } from '@/lib/maintenanceStore';
 import DigitalSopViewerModal from './DigitalSopViewerModal';
 import WeeklyRackInspectionModal from './WeeklyRackInspectionModal';
 
@@ -137,6 +138,20 @@ export default function MobileInspectionView() {
       comment: val.comment || null,
     }));
 
+    const hasFailure = formattedItems.some(i => !i.is_passed);
+
+    // Persist resolution state for Admin Dashboard
+    saveShuttleResolution({
+      shuttle_id: selectedShuttleId,
+      inspection_passed: !hasFailure,
+      status: !hasFailure ? 'ACTIVE' : 'FAULT',
+      technician_name: inspectorName,
+      resolved_at: new Date().toISOString(),
+      notes: hasFailure
+        ? 'Defects logged during inspection. Electronic interlock engaged.'
+        : 'All 22 checks verified. Electronic interlock released.',
+    });
+
     try {
       const { data, error } = await supabase.rpc('submit_daily_inspection', {
         p_shuttle_id: selectedShuttleId,
@@ -188,31 +203,40 @@ export default function MobileInspectionView() {
   };
 
   const selectedShuttleObj = shuttles.find(s => s.id === selectedShuttleId);
+  const currentUser = getCurrentUser();
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-800 font-sans pb-12 select-none">
       {/* Mobile Top Header */}
-      <header className="bg-[#0a192f] text-white px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30 border-b border-slate-800">
+      <header className="bg-[#0a192f] text-white px-3 sm:px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30 border-b border-slate-800">
         <div>
           <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">OPERATOR ACCESS</span>
           <h1 className="text-sm font-bold text-white font-mono">Wheel Assemblers Mobile Gate</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {currentUser?.role === 'ADMIN' && (
+            <Link
+              href="/tv"
+              className="px-2 sm:px-2.5 py-1 text-xs font-mono font-bold bg-[#1e3a8a] hover:bg-blue-900 text-white border border-blue-700 rounded-sm transition whitespace-nowrap"
+            >
+              Admin Dashboard
+            </Link>
+          )}
           <button
             onClick={() => {
               setDocuments(getStoredDocuments());
               setIsSopDrawerOpen(true);
             }}
-            className="px-2.5 py-1 text-xs font-mono font-bold bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded-sm transition"
+            className="px-2 sm:px-2.5 py-1 text-xs font-mono font-bold bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded-sm transition whitespace-nowrap"
           >
-            Applicable Documents
+            Documents
           </button>
           <button
             onClick={() => {
               setCurrentUser(null);
               router.push('/');
             }}
-            className="px-2.5 py-1 text-xs font-mono text-slate-400 hover:text-white rounded-sm transition"
+            className="px-2 sm:px-2.5 py-1 text-xs font-mono text-slate-400 hover:text-white rounded-sm transition"
           >
             Sign Out
           </button>

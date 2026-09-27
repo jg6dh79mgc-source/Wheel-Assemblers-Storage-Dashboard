@@ -1,5 +1,7 @@
 'use client';
 
+import { supabase } from './supabaseClient';
+
 export interface MaintenanceTask {
   id: string;
   shuttle: 'Shuttle 1' | 'Shuttle 2' | 'All Shuttles';
@@ -15,6 +17,23 @@ export interface MaintenanceTask {
   instructions: string;
   completed_at?: string;
   completed_by?: string;
+}
+
+export interface ShuttleResolutionRecord {
+  shuttle_id: string;
+  inspection_passed: boolean;
+  status: 'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'FAULT';
+  technician_name: string;
+  resolved_at: string;
+  notes?: string;
+}
+
+export interface SensorResolutionRecord {
+  shuttle_id: string;
+  cleaned: boolean;
+  technician_name: string;
+  cleaned_at: string;
+  notes?: string;
 }
 
 export const INITIAL_MAINTENANCE_TASKS: MaintenanceTask[] = [
@@ -62,14 +81,16 @@ export const INITIAL_MAINTENANCE_TASKS: MaintenanceTask[] = [
   },
 ];
 
-const STORAGE_KEY = 'wa_maintenance_schedule_v1';
+const STORAGE_KEY_TASKS = 'wa_maintenance_schedule_v2';
+const STORAGE_KEY_SHUTTLE_RES = 'wa_shuttle_resolutions_v2';
+const STORAGE_KEY_SENSOR_RES = 'wa_sensor_resolutions_v2';
 
 export function getStoredMaintenanceTasks(): MaintenanceTask[] {
   if (typeof window === 'undefined') return INITIAL_MAINTENANCE_TASKS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY_TASKS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MAINTENANCE_TASKS));
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(INITIAL_MAINTENANCE_TASKS));
       return INITIAL_MAINTENANCE_TASKS;
     }
     return JSON.parse(raw);
@@ -86,7 +107,7 @@ export function saveMaintenanceTask(task: Omit<MaintenanceTask, 'id'>): Maintena
   };
   const updated = [newTask, ...current];
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
   }
   return newTask;
 }
@@ -103,12 +124,88 @@ export function updateMaintenanceTaskStatus(
           ...t,
           status: newStatus,
           completed_at: newStatus === 'COMPLETED' ? new Date().toISOString() : undefined,
-          completed_by: newStatus === 'COMPLETED' ? completedBy || 'Shift Operator' : undefined,
+          completed_by: newStatus === 'COMPLETED' ? completedBy || 'Shift Technician' : undefined,
         }
       : t
   );
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
   }
+
+  // If this task was the optical sensor cleaning task, also resolve the sensor emergency
+  if (taskId === 'maint-02' && newStatus === 'COMPLETED') {
+    resolveSensorCleaning('2', completedBy || 'Shift Technician');
+  }
+
   return updated;
+}
+
+// Shuttle Inspection Resolution Management
+export function getStoredShuttleResolution(shuttleId: string): ShuttleResolutionRecord | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SHUTTLE_RES);
+    if (!raw) return null;
+    const all = JSON.parse(raw);
+    return all[shuttleId] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveShuttleResolution(record: ShuttleResolutionRecord) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SHUTTLE_RES);
+    const all = raw ? JSON.parse(raw) : {};
+    all[record.shuttle_id] = record;
+    localStorage.setItem(STORAGE_KEY_SHUTTLE_RES, JSON.stringify(all));
+
+    // Also update Supabase shuttle status if table exists
+    try {
+      supabase.from('shuttles').update({
+        status: record.status,
+        last_inspection_passed: record.inspection_passed,
+      }).eq('id', record.shuttle_id);
+    } catch {}
+  } catch {}
+}
+
+// Sensor Cleaning Resolution Management
+export function getStoredSensorResolution(shuttleId: string): SensorResolutionRecord | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SENSOR_RES);
+    if (!raw) return null;
+    const all = JSON.parse(raw);
+    return all[shuttleId] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function resolveSensorCleaning(shuttleId: string, technicianName: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SENSOR_RES);
+    const all = raw ? JSON.parse(raw) : {};
+    all[shuttleId] = {
+      shuttle_id: shuttleId,
+      cleaned: true,
+      technician_name: technicianName,
+      cleaned_at: new Date().toISOString(),
+      notes: 'Lenses wiped with alcohol swab. Gesture trigger response verified.',
+    };
+    localStorage.setItem(STORAGE_KEY_SENSOR_RES, JSON.stringify(all));
+
+    // Also update task if pending
+    const tasks = getStoredMaintenanceTasks();
+    const sensorTask = tasks.find(t => t.id === 'maint-02');
+    if (sensorTask && sensorTask.status !== 'COMPLETED') {
+      sensorTask.status = 'COMPLETED';
+      sensorTask.completed_at = new Date().toISOString();
+      sensorTask.completed_by = technicianName;
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+    }
+  } catch {}
 }
