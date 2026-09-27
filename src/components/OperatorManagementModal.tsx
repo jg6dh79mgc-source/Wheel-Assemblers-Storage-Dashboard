@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getStoredOperators, saveOperator, deleteStoredOperator, getCurrentUser } from '@/lib/authStore';
+import { getStoredOperators, saveOperator, deleteStoredOperator, getCurrentUser, syncOperatorsFromCloud } from '@/lib/authStore';
 import { supabase } from '@/lib/supabaseClient';
 import { Operator } from '@/types';
 
@@ -28,6 +28,12 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
       setCurrentUser(getCurrentUser());
       setShowAddForm(false);
       setMessage(null);
+
+      syncOperatorsFromCloud().then((ops) => {
+        if (ops && ops.length > 0) {
+          setOperators(ops);
+        }
+      });
     }
   }, [isOpen]);
 

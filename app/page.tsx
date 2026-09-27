@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStoredOperators, setCurrentUser } from '@/lib/authStore';
+import { syncOperatorsFromCloud, saveOperator, setCurrentUser, getStoredOperators } from '@/lib/authStore';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,60 +14,43 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Sync latest cloud credentials immediately on load (bridges Desktop and Mobile)
+  useEffect(() => {
+    syncOperatorsFromCloud().catch(() => {});
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setIsLoading(true);
 
-    const operators = getStoredOperators();
     const cleanUser = username.trim().toLowerCase();
 
-    // 1. Check credentials against stored local accounts
-    let found = operators.find(
-      (u) =>
-        u.username.toLowerCase() === cleanUser &&
-        u.password === password
-    );
-
-    // 2. If not found in local storage, check remote Supabase operators table for shared login across devices
-    if (!found) {
-      try {
-        const { supabase } = await import('@/lib/supabaseClient');
-        const { data: dbOp } = await supabase
-          .from('operators')
-          .select('*')
-          .eq('username', cleanUser)
-          .maybeSingle();
-
-        if (dbOp && (!dbOp.password || dbOp.password === password)) {
-          found = {
-            id: dbOp.id,
-            username: dbOp.username,
-            name: dbOp.name,
-            role: dbOp.role,
-            shift: dbOp.shift || 'Default Shift',
-            active: dbOp.active ?? true,
-            created_at: dbOp.created_at || new Date().toISOString(),
-          };
-          const { saveOperator } = await import('@/lib/authStore');
-          saveOperator(found);
-        }
-      } catch {}
+    // 1. Fetch latest operators from Supabase / cloud server
+    let cloudOps = await syncOperatorsFromCloud();
+    if (!cloudOps || cloudOps.length === 0) {
+      cloudOps = getStoredOperators();
     }
 
-    // 3. Fallback default administrator credentials
-    if (!found && cleanUser === 'admin' && password === 'admin123') {
+    // 2. Verify credentials
+    let found = cloudOps.find(
+      (u) =>
+        u.username.toLowerCase() === cleanUser &&
+        (u.password === password || (!u.password && password === 'admin'))
+    );
+
+    // 3. Default fallback administrator
+    if (!found && cleanUser === 'admin' && (password === 'admin' || password === 'admin123')) {
       found = {
         id: 'admin-primary',
         username: 'admin',
-        password: 'admin123',
+        password: password,
         name: 'System Administrator',
         role: 'ADMIN' as const,
         shift: 'A',
         active: true,
         created_at: new Date().toISOString(),
       };
-      const { saveOperator } = await import('@/lib/authStore');
       saveOperator(found);
     }
 
@@ -100,10 +83,13 @@ export default function LoginPage() {
 
         {/* Authentication Card */}
         <div className="bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4">
-          <div className="border-b border-slate-200 pb-2.5">
+          <div className="border-b border-slate-200 pb-2.5 flex justify-between items-center">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
               System Sign-In
             </h2>
+            <span className="text-[10px] font-mono text-blue-900 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
+              Cloud Auth Sync
+            </span>
           </div>
 
           {errorMsg && (
@@ -118,7 +104,7 @@ export default function LoginPage() {
               <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Username</label>
               <input
                 type="text"
-                placeholder="Enter your username"
+                placeholder="Enter authorized username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
@@ -145,7 +131,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition"
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? 'Authenticating Cloud...' : 'Sign In'}
             </button>
           </form>
         </div>

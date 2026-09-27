@@ -96,34 +96,34 @@ interface CavitySlot {
 const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   // Level 2 (Top) - Stepped Roofline: L-2 and G-2 are open/empty
   { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 0 },
-  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 16, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 18, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 18, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 25, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 0, capacity: 29 }, // Reserved empty for F100 overflow
+  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 19, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 19, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
   { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 0 },
 
   // Level 1 (Middle)
-  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 16, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 18, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 20, capacity: 29 }, // Shuttle 1
-  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 23, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 21, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 18, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 19, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 21, capacity: 29 }, // Shuttle 1
+  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 24, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 22, capacity: 29 },
 
   // Level 0 (Ground)
-  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 20, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 20, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 }, // Shuttle 2
-  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 24, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 21, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 21, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 }, // Shuttle 2
+  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 23, capacity: 29 },
 ];
 
 // Active SKUs on Cross-Section View (Averaged Daily Inbound & Outbound, Averaged Daily Values)
 // Note: 5A6F115-01 (0.35 arr / 0.38 disp) and 5A6F116-01 (0.35 arr / 0.35 disp) excluded per operational directive
 const ACTIVE_CROSS_SECTION_SKUS = [
   { code: '5a19de0-01', short: '5a19d', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 2, dispatch: 2, buffer4d: 8, bays: 'K-1' },
-  { code: '5A6F100-01', short: 'F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 34, dispatch: 34, buffer4d: 136, bays: 'H-2, H-1, J-0, I-0, H-0' },
+  { code: '5A6F100-01', short: 'F100', name: 'Small Rim High Vol (Green)', type: 'SMALL_RIM', arrivals: 34, dispatch: 34, buffer4d: 136, bays: 'H-2, H-1, J-0, I-0, H-0 (Overflow: K-2)' },
   { code: '5A6F114-01', short: 'F114', name: 'Small Rim (Green)', type: 'SMALL_RIM', arrivals: 3, dispatch: 3, buffer4d: 12, bays: 'K-0' },
   { code: '5A90F90-01', short: 'F90', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'I-2' },
   { code: '5A90F91-01', short: 'F91', name: 'Large Rim (Peach)', type: 'LARGE_RIM', arrivals: 5, dispatch: 5, buffer4d: 20, bays: 'J-1' },
