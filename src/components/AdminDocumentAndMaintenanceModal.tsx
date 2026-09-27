@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getStoredDocuments, saveDocument, DocumentItem } from '@/lib/documentStore';
+import { getStoredDocuments, saveDocument, deleteDocument, DocumentItem } from '@/lib/documentStore';
 import { getStoredMaintenanceTasks, saveMaintenanceTask, MaintenanceTask } from '@/lib/maintenanceStore';
 import DigitalSopViewerModal from './DigitalSopViewerModal';
 
@@ -19,12 +19,13 @@ export default function AdminDocumentAndMaintenanceModal({
   const [activeTab, setActiveTab] = useState<'DOCS' | 'MAINTENANCE'>(defaultTab);
 
   // Document upload form state
-  const [docType, setDocType] = useState<'SOP' | 'FMEA'>('SOP');
+  const [docType, setDocType] = useState<'SOP' | 'FMEA' | 'SPL' | 'CHECKSHEET'>('SOP');
   const [docCode, setDocCode] = useState('');
   const [docTitle, setDocTitle] = useState('');
-  const [docCategory, setDocCategory] = useState('Pre-Operational');
-  const [docVersion, setDocVersion] = useState('v1.0');
+  const [docCategory, setDocCategory] = useState('Plant Standard Work');
+  const [docVersion, setDocVersion] = useState('Rev 01');
   const [docFileName, setDocFileName] = useState('');
+  const [docImageUrl, setDocImageUrl] = useState('');
   const [docDesc, setDocDesc] = useState('');
 
   // Maintenance PM Action scheduling form state
@@ -61,16 +62,27 @@ export default function AdminDocumentAndMaintenanceModal({
       version: docVersion.trim(),
       uploaded_by: 'Plant Administrator',
       file_name: docFileName.trim() || `${docCode.trim().toUpperCase()}.pdf`,
+      image_url: docImageUrl.trim() || undefined,
       description: docDesc.trim(),
     });
 
     setDocuments(getStoredDocuments());
-    setNotification(`Successfully registered ${docType} document: ${docCode}`);
+    setNotification(`Successfully registered document: ${docCode}`);
     setDocCode('');
     setDocTitle('');
     setDocFileName('');
+    setDocImageUrl('');
     setDocDesc('');
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleDeleteDocument = (id: string, code: string) => {
+    if (confirm(`Confirm deletion of document ${code}?`)) {
+      const updated = deleteDocument(id);
+      setDocuments(updated);
+      setNotification(`Document ${code} deleted successfully.`);
+      setTimeout(() => setNotification(null), 3000);
+    }
   };
 
   const handleMaintenanceSubmit = (e: React.FormEvent) => {
@@ -105,7 +117,7 @@ export default function AdminDocumentAndMaintenanceModal({
         <div className="px-4 sm:px-6 py-3 border-b border-slate-800 bg-[#0a192f] flex items-center justify-between text-white">
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">ADMIN PORTAL</h2>
-            <p className="text-sm font-bold text-white font-mono">SOP / FMEA Management & Schedule PM Action</p>
+            <p className="text-sm font-bold text-white font-mono">Upload Applicable Documents & Schedule PM Action</p>
           </div>
           <button
             onClick={onClose}
@@ -125,7 +137,7 @@ export default function AdminDocumentAndMaintenanceModal({
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            Upload SOP / FMEA
+            Upload Applicable Documents
           </button>
           <button
             onClick={() => setActiveTab('MAINTENANCE')}
@@ -141,14 +153,14 @@ export default function AdminDocumentAndMaintenanceModal({
 
         {/* Notification Banner */}
         {notification && (
-          <div className="bg-blue-50 border-b border-blue-200 text-blue-900 text-xs px-4 py-2 font-medium">
+          <div className="bg-blue-50 border-b border-blue-200 text-blue-900 text-xs px-4 py-2 font-mono font-medium">
             {notification}
           </div>
         )}
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs bg-slate-50">
-          {/* TAB 1: UPLOAD SOP OR FMEA */}
+          {/* TAB 1: UPLOAD APPLICABLE DOCUMENTS */}
           {activeTab === 'DOCS' && (
             <form onSubmit={handleDocumentSubmit} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -161,26 +173,28 @@ export default function AdminDocumentAndMaintenanceModal({
                   >
                     <option value="SOP">Standard Operating Procedure (SOP)</option>
                     <option value="FMEA">Failure Mode & Effects Analysis (FMEA)</option>
+                    <option value="SPL">Single Point Lesson (SPL)</option>
+                    <option value="CHECKSHEET">Inspection Checksheet</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Document Code *</label>
                   <input
                     type="text"
-                    placeholder="e.g. SOP-SH-05 or FMEA-WHEEL-02"
+                    placeholder="e.g. SPL-026 or WI NL.RW001"
                     value={docCode}
                     onChange={(e) => setDocCode(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
+                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono uppercase"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Title *</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Document Title *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Multi-Directional Shuttle Emergency Stop Procedure"
+                  placeholder="e.g. Work Instruction - Warehousing of Rims"
                   value={docTitle}
                   onChange={(e) => setDocTitle(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
@@ -190,10 +204,10 @@ export default function AdminDocumentAndMaintenanceModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Category</label>
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Category / Workstation</label>
                   <input
                     type="text"
-                    placeholder="e.g. Pre-Operational, Safety, Mechanical"
+                    placeholder="e.g. Inbound Operations, Safety, Mechanical"
                     value={docCategory}
                     onChange={(e) => setDocCategory(e.target.value)}
                     className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
@@ -203,30 +217,42 @@ export default function AdminDocumentAndMaintenanceModal({
                   <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Revision / Version</label>
                   <input
                     type="text"
-                    placeholder="e.g. Rev 01"
+                    placeholder="e.g. Rev 03"
                     value={docVersion}
                     onChange={(e) => setDocVersion(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
+                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Attached Filename</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. WI_NL_RW001_Inbound.png"
+                    value={docFileName}
+                    onChange={(e) => setDocFileName(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Document Sheet Image URL (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /docs/wi-inbound-operations.png"
+                    value={docImageUrl}
+                    onChange={(e) => setDocImageUrl(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Attached Filename / ISO Reference</label>
-                <input
-                  type="text"
-                  placeholder="e.g. SOP-SH-05_Emergency_Procedures.pdf"
-                  value={docFileName}
-                  onChange={(e) => setDocFileName(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Summary & Scope</label>
+                <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">Scope & Description</label>
                 <textarea
                   rows={2}
-                  placeholder="Brief summary of document purpose and operating instructions..."
+                  placeholder="Summary of document purpose and operating controls..."
                   value={docDesc}
                   onChange={(e) => setDocDesc(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:border-blue-600 outline-none"
@@ -236,20 +262,20 @@ export default function AdminDocumentAndMaintenanceModal({
               <div className="pt-2 flex justify-end">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded font-medium transition text-xs shadow-sm"
+                  className="px-4 py-2 bg-[#0a192f] hover:bg-[#172554] text-white rounded font-mono text-xs font-bold transition"
                 >
-                  Register Document
+                  Save & Register Document
                 </button>
               </div>
 
-              {/* Registered Documents List with Previews */}
-              <div className="pt-4 border-t border-slate-200 space-y-2.5">
+              {/* Registered Documents List with Previews & Delete */}
+              <div className="pt-4 border-t border-slate-300 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800 uppercase tracking-wider font-mono text-[11px]">
-                    Active Digital SOP & FMEA ISO Library ({documents.length})
+                    Registered Applicable Documents ({documents.length})
                   </span>
                   <span className="text-[11px] text-slate-500 font-mono">
-                    Instant Operator Availability
+                    Direct High-Resolution View
                   </span>
                 </div>
 
@@ -257,26 +283,36 @@ export default function AdminDocumentAndMaintenanceModal({
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className="bg-white p-3 rounded-lg border border-slate-200 flex flex-wrap justify-between items-center gap-2 shadow-sm"
+                      className="bg-white p-3 rounded border border-slate-300 flex flex-wrap justify-between items-center gap-2"
                     >
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 flex-1 min-w-[200px]">
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-mono font-bold text-blue-900 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                             {doc.code}
                           </span>
-                          <span className="font-bold text-slate-800 text-xs">{doc.title}</span>
+                          <span className="font-bold text-slate-900 text-xs font-mono">{doc.title}</span>
                           <span className="text-[10px] text-slate-500 font-mono">({doc.version})</span>
                         </div>
                         <p className="text-[11px] text-slate-600 line-clamp-1">{doc.description}</p>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setPreviewDoc(doc)}
-                        className="px-3 py-1 bg-slate-100 hover:bg-blue-50 text-blue-900 border border-slate-300 hover:border-blue-300 rounded font-mono text-[11px] transition shrink-0"
-                      >
-                        View Interactive Guide
-                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewDoc(doc)}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded font-mono text-[11px] font-bold transition"
+                        >
+                          View Document
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDocument(doc.id, doc.code)}
+                          className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded font-mono text-[11px] font-bold transition"
+                          title="Delete this document"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

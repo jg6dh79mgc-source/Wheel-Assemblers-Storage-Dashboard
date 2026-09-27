@@ -273,3 +273,12 @@ export function saveDocument(item: Omit<DocumentItem, 'id' | 'uploaded_at'>): Do
   }
   return newDoc;
 }
+
+export function deleteDocument(id: string): DocumentItem[] {
+  const current = getStoredDocuments();
+  const updated = current.filter((doc) => doc.id !== id);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }
+  return updated;
+}

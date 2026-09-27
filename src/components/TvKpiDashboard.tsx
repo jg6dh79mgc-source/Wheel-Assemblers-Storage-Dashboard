@@ -86,27 +86,27 @@ interface CavitySlot {
 const RIM_STOREROOM_CAVITIES: CavitySlot[] = [
   // Level 2 (Top)
   { store: 'RIM_STORE', col: 'L', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 24, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 28, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 2, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 2, type: 'SMALL_RIM', partCode: 'Overflow', occupied: 4, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 2, type: 'LARGE_RIM', partCode: 'F119', occupied: 6, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 2, type: 'LARGE_RIM', partCode: 'F90', occupied: 5, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
   { store: 'RIM_STORE', col: 'G', level: 2, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
 
   // Level 1 (Middle)
-  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 26, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 22, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 29, capacity: 29 }, // Shuttle 1
-  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 25, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
-  { store: 'RIM_STORE', col: 'G', level: 1, type: 'LARGE_RIM', partCode: 'F112', occupied: 21, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 1, type: 'LARGE_RIM', partCode: 'F117 / F118', occupied: 8, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 1, type: 'SMALL_RIM', partCode: '5a19d', occupied: 5, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 1, type: 'LARGE_RIM', partCode: 'F91', occupied: 7, capacity: 29 }, // Shuttle 1
+  { store: 'RIM_STORE', col: 'I', level: 1, type: 'LARGE_RIM', partCode: 'F112 / F113', occupied: 6, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 1, type: 'SMALL_RIM', partCode: 'F100', occupied: 8, capacity: 29 },
+  { store: 'RIM_STORE', col: 'G', level: 1, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
 
   // Level 0 (Ground)
-  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 29, capacity: 29 },
-  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 27, capacity: 29 },
-  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 26, capacity: 29 },
-  { store: 'RIM_STORE', col: 'I', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 28, capacity: 29 },
-  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 29, capacity: 29 }, // Shuttle 2
-  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 23, capacity: 29 },
+  { store: 'RIM_STORE', col: 'L', level: 0, type: 'LARGE_RIM', partCode: 'F120', occupied: 7, capacity: 29 },
+  { store: 'RIM_STORE', col: 'K', level: 0, type: 'SMALL_RIM', partCode: 'F114', occupied: 5, capacity: 29 },
+  { store: 'RIM_STORE', col: 'J', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 6, capacity: 29 },
+  { store: 'RIM_STORE', col: 'I', level: 0, type: 'EMPTY', partCode: '—', occupied: 0, capacity: 29 },
+  { store: 'RIM_STORE', col: 'H', level: 0, type: 'SMALL_RIM', partCode: 'F100', occupied: 7, capacity: 29 }, // Shuttle 2
+  { store: 'RIM_STORE', col: 'G', level: 0, type: 'LARGE_RIM', partCode: 'F113', occupied: 4, capacity: 29 },
 ];
 
 // Tyre Storeroom (Permanently Greyed Out, Bays E to A, Levels 0 to 3)
@@ -142,8 +142,8 @@ export default function TvKpiDashboard() {
   // Collapsible Side Menu State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Active Main Section View
-  const [activeTab, setActiveTab] = useState<'MONITOR' | 'MAINTENANCE' | 'OEE'>('MONITOR');
+  // Active Main Section View (OEE removed per operational request)
+  const [activeTab, setActiveTab] = useState<'MONITOR' | 'MAINTENANCE'>('MONITOR');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [showTyreStore, setShowTyreStore] = useState<boolean>(false);
 
@@ -391,16 +391,6 @@ export default function TvKpiDashboard() {
                 >
                   Maintenance & 52-Wk Matrix
                 </button>
-                <button
-                  onClick={() => setActiveTab('OEE')}
-                  className={`w-full text-left px-3 py-2 rounded text-xs font-mono transition ${
-                    activeTab === 'OEE'
-                      ? 'bg-[#172554] text-white font-bold border-l-2 border-blue-400'
-                      : 'text-slate-300 hover:bg-[#112240]'
-                  }`}
-                >
-                  OEE & Takt Telemetry
-                </button>
               </div>
 
               {/* Administrative Actions */}
@@ -418,7 +408,7 @@ export default function TvKpiDashboard() {
                   onClick={openManagerDocs}
                   className="w-full text-left px-3 py-2 rounded text-xs font-mono text-slate-300 hover:bg-[#112240] transition"
                 >
-                  Upload SOP / FMEA
+                  Upload Applicable Documents
                 </button>
                 <button
                   onClick={() => setIsOperatorModalOpen(true)}
@@ -526,25 +516,25 @@ export default function TvKpiDashboard() {
                     <div>
                       <div className="flex justify-between text-[11px] font-mono">
                         <span className="text-slate-600">INBOUND</span>
-                        <span className="font-bold text-slate-900">78 / 120</span>
+                        <span className="font-bold text-slate-900">18 / 120</span>
                       </div>
                       <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-[#1e3a8a] h-full" style={{ width: `${(78 / 120) * 100}%` }} />
+                        <div className="bg-[#1e3a8a] h-full" style={{ width: `${(18 / 120) * 100}%` }} />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[11px] font-mono">
                         <span className="text-slate-600">OUTBOUND</span>
-                        <span className="font-bold text-slate-900">61 / 93</span>
+                        <span className="font-bold text-slate-900">14 / 93</span>
                       </div>
                       <div className="w-full bg-slate-200 h-1.5 rounded-sm overflow-hidden mt-0.5">
-                        <div className="bg-slate-400 h-full" style={{ width: `${(61 / 93) * 100}%` }} />
+                        <div className="bg-slate-400 h-full" style={{ width: `${(14 / 93) * 100}%` }} />
                       </div>
                     </div>
                   </div>
                   <div className="text-[11px] font-mono text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
                     <span>CAPACITY UTILIZATION</span>
-                    <span className="font-bold text-slate-800">65% IN • 66% OUT</span>
+                    <span className="font-bold text-slate-800">15% IN • 15% OUT</span>
                   </div>
                 </div>
 
@@ -558,16 +548,16 @@ export default function TvKpiDashboard() {
                   </div>
                   <div className="my-2">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-mono font-bold text-slate-900">4.2</span>
+                      <span className="text-2xl font-mono font-bold text-slate-900">2.4</span>
                       <span className="text-xs text-slate-500 font-mono">DAYS AVAILABLE</span>
                     </div>
                     <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden mt-1">
-                      <div className="bg-[#1e3a8a] h-full" style={{ width: '84%' }} />
+                      <div className="bg-[#1e3a8a] h-full" style={{ width: '15%' }} />
                     </div>
                   </div>
                   <div className="flex justify-between text-[11px] font-mono text-slate-500 pt-1.5 border-t border-slate-200">
                     <span>OCCUPIED</span>
-                    <span>428 / 522 PALLETS</span>
+                    <span>78 / 522 PALLETS (15%)</span>
                   </div>
                 </div>
               </div>
@@ -680,21 +670,21 @@ export default function TvKpiDashboard() {
                       </div>
                     </div>
 
-                    {/* TYRE STOREROOM (Permanently Greyed Out - Bays E to A) */}
+                    {/* TYRE STOREROOM (Clearly Visible When Toggled - Bays E to A) */}
                     {showTyreStore && (
-                      <div className="flex-1 bg-slate-100 p-2 sm:p-3.5 border border-dashed border-slate-300 rounded space-y-2 opacity-50 w-full">
+                      <div className="flex-1 bg-slate-50 p-2 sm:p-3.5 border border-slate-300 rounded space-y-2 w-full">
                         <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono border-b border-slate-300 pb-1.5">
-                          <span className="font-bold text-slate-600 uppercase">
+                          <span className="font-bold text-slate-800 uppercase">
                             TYRE STOREROOM (BAYS E-A, LEVELS 0-3)
                           </span>
-                          <span className="text-[9px] sm:text-[10px] text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">
-                            UNCOMMISSIONED
+                          <span className="text-[9px] sm:text-[10px] text-slate-700 font-bold bg-slate-200 border border-slate-300 px-1.5 py-0.5 rounded">
+                            UNCOMMISSIONED • ZONE INACTIVE
                           </span>
                         </div>
 
                         {[3, 2, 1, 0].map((lvl) => (
                           <div key={`tyre-lvl-${lvl}`} className="flex items-center gap-1 sm:gap-1.5">
-                            <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-400 text-right pr-0.5 sm:pr-1">
+                            <span className="w-5 sm:w-7 text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 text-right pr-0.5 sm:pr-1">
                               L{lvl}
                             </span>
                             <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
@@ -705,13 +695,13 @@ export default function TvKpiDashboard() {
                                 return (
                                   <div
                                     key={`tyre-${col}-${lvl}`}
-                                    className="h-9 sm:h-11 rounded-sm border border-slate-300 bg-slate-200/60 p-0.5 sm:p-1 flex flex-col justify-between text-slate-500 font-mono text-[8px] sm:text-[9px]"
+                                    className="h-10 sm:h-12 rounded-sm border border-slate-300 bg-white p-1 flex flex-col justify-between text-slate-700 font-mono text-[8px] sm:text-[9px]"
                                   >
                                     <div className="flex justify-between leading-none">
-                                      <span>{col}-{lvl}</span>
-                                      <span className="truncate max-w-[24px]">{slot?.partCode}</span>
+                                      <span className="font-bold text-slate-800">{col}-{lvl}</span>
+                                      <span className="truncate max-w-[28px] text-slate-400">{slot?.partCode || 'EMPTY'}</span>
                                     </div>
-                                    <div className="text-center font-bold leading-none">
+                                    <div className="text-center font-bold text-[10px] sm:text-xs leading-none text-slate-600">
                                       {slot?.occupied || 0}/29
                                     </div>
                                   </div>
@@ -721,7 +711,7 @@ export default function TvKpiDashboard() {
                           </div>
                         ))}
 
-                        <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-400 font-bold text-center">
+                        <div className="flex items-center gap-1 sm:gap-1.5 pt-1 text-[8px] sm:text-[10px] font-mono text-slate-600 font-bold text-center">
                           <span className="w-5 sm:w-7 text-right pr-0.5 sm:pr-1"></span>
                           <div className="grid grid-cols-5 gap-1 sm:gap-1.5 flex-1">
                             {['BAY E', 'BAY D', 'BAY C', 'BAY B', 'BAY A'].map((bay) => (
@@ -740,8 +730,8 @@ export default function TvKpiDashboard() {
           {/* TAB 2: MAINTENANCE CONTROL & 52-WEEK MATRIX */}
           {activeTab === 'MAINTENANCE' && (
             <div className="space-y-4">
-              {/* Header Action Bar */}
-              <div className="bg-white border border-slate-300 p-3.5 rounded flex flex-wrap justify-between items-center gap-3">
+              {/* Header Title */}
+              <div className="bg-white border border-slate-300 p-3.5 rounded flex justify-between items-center">
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 uppercase font-mono">
                     PREVENTATIVE MAINTENANCE CONTROL
@@ -749,27 +739,6 @@ export default function TvKpiDashboard() {
                   <p className="text-xs text-slate-500 font-mono">
                     Component Wear Telemetry & 52-Week Annual ISO Matrix
                   </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={openAddPmAction}
-                    className="px-3 py-1.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold transition"
-                  >
-                    + ADD PM ACTION
-                  </button>
-                  <button
-                    onClick={openManagerDocs}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded text-xs font-mono font-medium transition"
-                  >
-                    UPLOAD SOP / FMEA
-                  </button>
-                  <button
-                    onClick={() => setIsWeeklyRackModalOpen(true)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded text-xs font-mono font-medium transition"
-                  >
-                    WEEKLY RACK CHECK (FR-7.2-03)
-                  </button>
                 </div>
               </div>
 
@@ -860,53 +829,6 @@ export default function TvKpiDashboard() {
                 onOpenWeeklyRackModal={() => setIsWeeklyRackModalOpen(true)}
                 onOpenAddPmAction={openAddPmAction}
               />
-            </div>
-          )}
-
-          {/* TAB 3: OEE & TAKT TELEMETRY */}
-          {activeTab === 'OEE' && (
-            <div className="bg-white border border-slate-300 p-5 rounded space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-200 pb-2 text-xs font-mono">
-                <span className="font-bold uppercase tracking-wider text-slate-900">
-                  OVERALL EQUIPMENT EFFECTIVENESS (OEE)
-                </span>
-                <span className="font-bold text-base text-[#1e3a8a]">86.3% OEE AGGREGATE</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-slate-50 border border-slate-200 p-3.5 rounded space-y-2">
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-slate-600">AVAILABILITY</span>
-                    <span className="font-bold text-slate-900">94.2%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden">
-                    <div className="bg-[#1e3a8a] h-full" style={{ width: '94.2%' }} />
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-500">452.0 / 480.0 OPERATING MINS</div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 p-3.5 rounded space-y-2">
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-slate-600">PERFORMANCE RATE</span>
-                    <span className="font-bold text-slate-900">92.4%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden">
-                    <div className="bg-[#1e3a8a] h-full" style={{ width: '92.4%' }} />
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-500">CYCLE TIME: 81.2s (TAKT: 75.0s)</div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 p-3.5 rounded space-y-2">
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-slate-600">QUALITY (FIRST TIME)</span>
-                    <span className="font-bold text-slate-900">99.2%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-sm overflow-hidden">
-                    <div className="bg-[#1e3a8a] h-full" style={{ width: '99.2%' }} />
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-500">318 / 320 PALLETS RIGHT FIRST TIME</div>
-                </div>
-              </div>
             </div>
           )}
           </div>

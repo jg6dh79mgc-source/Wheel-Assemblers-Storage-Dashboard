@@ -205,7 +205,7 @@ export default function MobileInspectionView() {
             }}
             className="px-2.5 py-1 text-xs font-mono font-bold bg-[#172554] hover:bg-[#1e3a8a] text-blue-200 border border-blue-900 rounded-sm transition"
           >
-            SOPs & FMEA
+            Applicable Documents
           </button>
           <button
             onClick={() => {
@@ -515,16 +515,19 @@ export default function MobileInspectionView() {
         )}
       </main>
 
-      {/* SOPs & FMEA Side Drawer */}
+      {/* Applicable Documents Side Drawer */}
       {isSopDrawerOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-end">
           <div className="w-full max-w-sm bg-white border-l border-slate-300 h-full p-4 overflow-y-auto flex flex-col justify-between shadow-2xl">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Digital SOPs & FMEA</h2>
+                <div>
+                  <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">Applicable Documents</h2>
+                  <span className="text-[10px] text-slate-500 font-mono">Tap any document to view directly</span>
+                </div>
                 <button
                   onClick={() => setIsSopDrawerOpen(false)}
-                  className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono"
+                  className="px-2.5 py-1 rounded-sm bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono font-bold"
                 >
                   Close
                 </button>
@@ -535,48 +538,30 @@ export default function MobileInspectionView() {
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
-                    onClick={() => setActiveDoc(doc)}
-                    className={`p-3 rounded-lg border transition cursor-pointer text-xs ${
-                      activeDoc?.id === doc.id
-                        ? 'bg-blue-50 border-blue-400'
-                        : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-                    }`}
+                    onClick={() => {
+                      setSelectedViewerDoc(doc);
+                      setIsSopDrawerOpen(false);
+                    }}
+                    className="p-3 rounded border border-slate-300 hover:border-blue-900 hover:bg-blue-50 transition cursor-pointer text-xs bg-slate-50 space-y-1"
                   >
                     <div className="flex justify-between items-center text-[10px] font-mono text-slate-500">
-                      <span className="font-bold text-blue-900">{doc.code}</span>
-                      <span>{doc.type} • {doc.version}</span>
+                      <span className="font-bold text-blue-900 bg-white px-1.5 py-0.2 rounded border border-blue-200">{doc.code}</span>
+                      <span>{doc.version}</span>
                     </div>
-                    <div className="font-semibold text-slate-900 mt-0.5">{doc.title}</div>
-                    <p className="text-[11px] text-slate-600 mt-1 line-clamp-2">{doc.description}</p>
+                    <div className="font-semibold text-slate-900 font-mono text-xs">{doc.title}</div>
+                    <p className="text-[11px] text-slate-600 line-clamp-2">{doc.description}</p>
+                    <div className="text-[10px] font-mono text-blue-900 font-bold pt-1 flex justify-between items-center">
+                      <span>{doc.file_name || `${doc.code}.pdf`}</span>
+                      <span className="underline">View Document</span>
+                    </div>
                   </div>
                 ))}
               </div>
-
-              {activeDoc && (
-                <div className="bg-slate-50 p-3.5 rounded-lg border border-blue-300 text-xs space-y-2.5">
-                  <div className="font-bold text-slate-900">{activeDoc.title}</div>
-                  <div className="text-[10px] font-mono text-slate-500">
-                    Uploaded: {activeDoc.uploaded_by} • File: {activeDoc.file_name}
-                  </div>
-                  <p className="text-[11px] text-slate-700 leading-relaxed">{activeDoc.description}</p>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedViewerDoc(activeDoc);
-                      setIsSopDrawerOpen(false);
-                    }}
-                    className="w-full py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white font-medium rounded text-xs transition shadow-sm"
-                  >
-                    Open Interactive Guide & Sheet Preview
-                  </button>
-                </div>
-              )}
             </div>
 
             <button
               onClick={() => setIsSopDrawerOpen(false)}
-              className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-medium text-xs transition mt-4"
+              className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-mono text-xs font-bold transition mt-4"
             >
               Close Drawer
             </button>
