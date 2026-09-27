@@ -2,53 +2,23 @@
 
 import { Operator } from '@/types';
 
-export const DEFAULT_OPERATORS: (Operator & { password?: string })[] = [
-  {
-    id: 'user-admin-01',
-    username: 'ADMIN',
-    password: 'WheelAssemblers2026',
-    name: 'Plant Administrator',
-    employee_id: 'WA-ADM-01',
-    role: 'ADMIN',
-    shift: 'Shift 1 (06:00 - 14:00)',
-    active: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'user-op-01',
-    username: 'Operator',
-    password: 'Maintenance',
-    name: 'Shift Operator',
-    employee_id: 'WA-OP-01',
-    role: 'OPERATOR',
-    shift: 'Shift 1 (06:00 - 14:00)',
-    active: true,
-    created_at: new Date().toISOString(),
-  },
-];
+// No preconfigured accounts: users register their own secure credentials
+export const DEFAULT_OPERATORS: (Operator & { password?: string })[] = [];
 
-const STORAGE_KEY_USERS = 'wa_operators_db_v2';
-const STORAGE_KEY_CURRENT = 'wa_current_user_v2';
+const STORAGE_KEY_USERS = 'wa_operators_db_v3';
+const STORAGE_KEY_CURRENT = 'wa_current_user_v3';
 
 export function getStoredOperators(): (Operator & { password?: string })[] {
-  if (typeof window === 'undefined') return DEFAULT_OPERATORS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USERS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(DEFAULT_OPERATORS));
-      return DEFAULT_OPERATORS;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    // Ensure the new ADMIN and Operator accounts always exist
-    const hasAdmin = parsed.some((u: any) => u.username?.toUpperCase() === 'ADMIN');
-    const hasOp = parsed.some((u: any) => u.username?.toUpperCase() === 'OPERATOR');
-    if (!hasAdmin || !hasOp) {
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(DEFAULT_OPERATORS));
-      return DEFAULT_OPERATORS;
-    }
-    return parsed;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return DEFAULT_OPERATORS;
+    return [];
   }
 }
 
@@ -62,9 +32,9 @@ export function saveOperator(newOp: {
 }): Operator {
   const current = getStoredOperators();
   const operator: Operator & { password?: string } = {
-    id: `op-${Date.now()}`,
+    id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     username: newOp.username.trim(),
-    password: newOp.password || 'Maintenance',
+    password: newOp.password || '',
     name: newOp.name.trim(),
     employee_id: newOp.employee_id.trim().toUpperCase(),
     role: newOp.role,
@@ -73,7 +43,7 @@ export function saveOperator(newOp: {
     created_at: new Date().toISOString(),
   };
 
-  const updated = [operator, ...current];
+  const updated = [operator, ...current.filter((u) => u.username.toLowerCase() !== operator.username.toLowerCase())];
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
   }
