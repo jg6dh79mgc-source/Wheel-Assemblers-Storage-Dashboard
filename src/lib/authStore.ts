@@ -25,7 +25,6 @@ export function getStoredOperators(): (Operator & { password?: string })[] {
 export function saveOperator(newOp: {
   username: string;
   name: string;
-  employee_id: string;
   role: 'OPERATOR' | 'ADMIN' | 'MAINTENANCE_TECH';
   shift: 'Shift 1 (06:00 - 14:00)' | 'Shift 2 (14:00 - 22:00)' | 'Shift 3 (22:00 - 06:00)';
   password?: string;
@@ -36,7 +35,6 @@ export function saveOperator(newOp: {
     username: newOp.username.trim(),
     password: newOp.password || '',
     name: newOp.name.trim(),
-    employee_id: newOp.employee_id.trim().toUpperCase(),
     role: newOp.role,
     shift: newOp.shift,
     active: true,

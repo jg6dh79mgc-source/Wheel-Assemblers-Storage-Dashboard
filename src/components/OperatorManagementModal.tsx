@@ -15,7 +15,6 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
-    employee_id: '',
     role: 'OPERATOR' as 'OPERATOR' | 'ADMIN' | 'MAINTENANCE_TECH',
     shift: 'Shift 1 (06:00 - 14:00)' as any,
     password: '',
@@ -33,7 +32,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.username || !formData.employee_id) {
+    if (!formData.name || !formData.username) {
       setMessage({ type: 'error', text: 'Please fill in all required fields.' });
       return;
     }
@@ -46,11 +45,10 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
 
     const created = saveOperator(formData);
     setOperators(getStoredOperators());
-    setMessage({ type: 'success', text: `Operator ${created.name} (${created.employee_id}) added successfully.` });
+    setMessage({ type: 'success', text: `Operator ${created.name} (@${created.username}) added successfully.` });
     setFormData({
       name: '',
       username: '',
-      employee_id: '',
       role: 'OPERATOR',
       shift: 'Shift 1 (06:00 - 14:00)',
       password: '',
@@ -123,17 +121,6 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">Employee ID *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. WA-OP-115"
-                    value={formData.employee_id}
-                    onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 outline-none"
-                    required
-                  />
-                </div>
-                <div>
                   <label className="block text-[11px] font-mono text-slate-400 mb-1">Login Username *</label>
                   <input
                     type="text"
@@ -148,7 +135,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                   <label className="block text-[11px] font-mono text-slate-400 mb-1">Password</label>
                   <input
                     type="password"
-                    placeholder="Default: password123"
+                    placeholder="Set private password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-indigo-500 outline-none"
@@ -166,7 +153,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                     <option value="MAINTENANCE_TECH">Maintenance Technician</option>
                   </select>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="block text-[11px] font-mono text-slate-400 mb-1">Operating Shift</label>
                   <select
                     value={formData.shift}
@@ -196,7 +183,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
               <thead className="bg-slate-900/80 text-slate-400 font-mono border-b border-slate-800">
                 <tr>
                   <th className="py-2.5 px-3">Name</th>
-                  <th className="py-2.5 px-3">ID / User</th>
+                  <th className="py-2.5 px-3">Username</th>
                   <th className="py-2.5 px-3">Role</th>
                   <th className="py-2.5 px-3">Shift</th>
                   <th className="py-2.5 px-3 text-right">Status</th>
@@ -207,8 +194,7 @@ export default function OperatorManagementModal({ isOpen, onClose }: Props) {
                   <tr key={op.id} className="hover:bg-slate-900/40 transition">
                     <td className="py-2.5 px-3 font-semibold text-slate-200">{op.name}</td>
                     <td className="py-2.5 px-3 font-mono text-slate-400">
-                      <div>{op.employee_id}</div>
-                      <div className="text-[10px] text-slate-500 font-mono">@{op.username}</div>
+                      <div>@{op.username}</div>
                     </td>
                     <td className="py-2.5 px-3">
                       <span

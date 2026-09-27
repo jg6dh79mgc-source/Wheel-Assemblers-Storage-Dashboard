@@ -20,7 +20,6 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regName, setRegName] = useState('');
-  const [regEmployeeId, setRegEmployeeId] = useState('');
   const [regRole, setRegRole] = useState<'ADMIN' | 'OPERATOR' | 'MAINTENANCE_TECH'>('ADMIN');
   const [regShift, setRegShift] = useState<'Shift 1 (06:00 - 14:00)' | 'Shift 2 (14:00 - 22:00)' | 'Shift 3 (22:00 - 06:00)'>('Shift 1 (06:00 - 14:00)');
 
@@ -51,7 +50,7 @@ export default function LoginPage() {
     // Check credentials
     const found = operators.find(
       (u) =>
-        (u.username.toLowerCase() === cleanUser || u.employee_id.toLowerCase() === cleanUser) &&
+        u.username.toLowerCase() === cleanUser &&
         u.password === password
     );
 
@@ -75,7 +74,7 @@ export default function LoginPage() {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!regUsername.trim() || !regPassword || !regName.trim() || !regEmployeeId.trim()) {
+    if (!regUsername.trim() || !regPassword || !regName.trim()) {
       setErrorMsg('All fields are required.');
       return;
     }
@@ -101,7 +100,6 @@ export default function LoginPage() {
       username: regUsername.trim(),
       password: regPassword,
       name: regName.trim(),
-      employee_id: regEmployeeId.trim().toUpperCase(),
       role: regRole,
       shift: regShift,
     });
@@ -171,7 +169,7 @@ export default function LoginPage() {
             /* Login Form */
             <form onSubmit={handleLogin} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-slate-300 mb-1">Username or Employee ID</label>
+                <label className="block text-[11px] font-mono text-slate-300 mb-1">Username</label>
                 <input
                   type="text"
                   placeholder="Enter your username"
@@ -219,29 +217,16 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-300 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. John Doe"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-300 mb-1">Employee ID</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. WA-1042"
-                    value={regEmployeeId}
-                    onChange={(e) => setRegEmployeeId(e.target.value)}
-                    className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-[11px] font-mono text-slate-300 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
