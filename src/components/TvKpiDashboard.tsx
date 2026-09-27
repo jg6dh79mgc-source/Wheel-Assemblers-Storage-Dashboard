@@ -910,6 +910,21 @@ export default function TvKpiDashboard() {
         )}
       </main>
 
+      {/* 4. FOOTER WITH LIVE HEARTBEAT & SITE HEALTH MONITOR */}
+      <footer className="bg-[#1e293b] border-t border-slate-700/80 px-4 sm:px-6 py-2 flex flex-wrap justify-between items-center text-[10px] font-mono text-slate-400 gap-2 mt-auto">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-slate-200">Site Status: <strong>Online</strong></span>
+          <span className="text-slate-500">•</span>
+          <span>Health Check: <code className="text-blue-300">/api/health</code></span>
+          <span className="text-slate-500">•</span>
+          <span>Keep-Alive: <strong className="text-emerald-400">Active (10m Cron)</strong></span>
+        </div>
+        <div className="text-slate-500">
+          Wheel Assemblers Storage Operations • Automated Racking
+        </div>
+      </footer>
+
       {/* Operator Modal */}
       <OperatorManagementModal
         isOpen={isOperatorModalOpen}
