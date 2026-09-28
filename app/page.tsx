@@ -83,13 +83,10 @@ export default function LoginPage() {
 
         {/* Authentication Card */}
         <div className="bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4">
-          <div className="border-b border-slate-200 pb-2.5 flex justify-between items-center">
+          <div className="border-b border-slate-200 pb-2.5">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
               System Sign-In
             </h2>
-            <span className="text-[10px] font-mono text-blue-900 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
-              Cloud Auth Sync
-            </span>
           </div>
 
           {errorMsg && (
@@ -131,7 +128,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-xs font-mono font-bold uppercase transition"
             >
-              {isLoading ? 'Authenticating Cloud...' : 'Sign In'}
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
         </div>

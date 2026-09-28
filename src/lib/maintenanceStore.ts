@@ -4,28 +4,34 @@ import { supabase } from './supabaseClient';
 
 export interface MaintenanceTask {
   id: string;
-  shuttle: 'Shuttle 1' | 'Shuttle 2' | 'All Shuttles';
+  shuttle: string;
   task_title: string;
-  component: string;
-  trigger_type: 'USAGE_ODOMETER' | 'USAGE_CYCLES' | 'CALENDAR_DAYS' | 'PREVENTATIVE';
-  threshold_metric: string;
+  component?: string;
+  trigger_type?: 'USAGE_ODOMETER' | 'USAGE_CYCLES' | 'CALENDAR_DAYS' | 'PREVENTATIVE';
+  threshold_metric?: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
-  due_date: string;
+  due_date?: string;
+  scheduled_for?: string;
   priority: 'CRITICAL' | 'HIGH' | 'NORMAL';
   assigned_to: string;
-  scheduled_by: string;
-  instructions: string;
+  scheduled_by?: string;
+  instructions?: string;
+  description?: string;
   completed_at?: string;
   completed_by?: string;
 }
 
 export interface ShuttleResolutionRecord {
   shuttle_id: string;
-  inspection_passed: boolean;
-  status: 'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'FAULT';
-  technician_name: string;
+  shuttle_code?: string;
+  inspection_passed?: boolean;
+  status?: 'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'FAULT';
+  status_after?: 'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'FAULT';
+  technician_name?: string;
+  resolved_by?: string;
   resolved_at: string;
   notes?: string;
+  resolution_notes?: string;
 }
 
 export interface SensorResolutionRecord {

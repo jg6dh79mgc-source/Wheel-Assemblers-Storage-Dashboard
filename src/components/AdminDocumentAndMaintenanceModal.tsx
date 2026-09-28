@@ -117,7 +117,7 @@ export default function AdminDocumentAndMaintenanceModal({
         <div className="px-4 sm:px-6 py-3 border-b border-slate-800 bg-[#0a192f] flex items-center justify-between text-white">
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">ADMIN PORTAL</h2>
-            <p className="text-sm font-bold text-white font-mono">Upload Applicable Documents & Schedule PM Action</p>
+            <p className="text-sm font-bold text-white font-mono">Upload Standardized Documents & Schedule PM Action</p>
           </div>
           <button
             onClick={onClose}
@@ -137,7 +137,7 @@ export default function AdminDocumentAndMaintenanceModal({
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            Upload Applicable Documents
+            Upload Standardized Documents
           </button>
           <button
             onClick={() => setActiveTab('MAINTENANCE')}
@@ -160,7 +160,7 @@ export default function AdminDocumentAndMaintenanceModal({
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs bg-slate-50">
-          {/* TAB 1: UPLOAD APPLICABLE DOCUMENTS */}
+          {/* TAB 1: UPLOAD STANDARDIZED DOCUMENTS */}
           {activeTab === 'DOCS' && (
             <form onSubmit={handleDocumentSubmit} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -272,7 +272,7 @@ export default function AdminDocumentAndMaintenanceModal({
               <div className="pt-4 border-t border-slate-300 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-800 uppercase tracking-wider font-mono text-[11px]">
-                    Registered Applicable Documents ({documents.length})
+                    Registered Standardized Documents ({documents.length})
                   </span>
                   <span className="text-[11px] text-slate-500 font-mono">
                     Direct High-Resolution View

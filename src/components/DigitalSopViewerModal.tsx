@@ -70,7 +70,7 @@ export default function DigitalSopViewerModal({ document, isOpen, onClose }: Pro
           ) : (
             <div className="w-full max-w-2xl bg-white border border-slate-300 rounded p-6 shadow-sm space-y-4 my-auto">
               <div className="border-b border-slate-200 pb-2">
-                <span className="text-xs font-mono uppercase text-slate-500 block">Applicable Document File</span>
+                <span className="text-xs font-mono uppercase text-slate-500 block">Standardized Document File</span>
                 <span className="font-mono font-bold text-sm text-slate-900">{document.file_name || `${document.code}.pdf`}</span>
               </div>
               <p className="text-xs text-slate-700 leading-relaxed font-sans">{document.description}</p>
