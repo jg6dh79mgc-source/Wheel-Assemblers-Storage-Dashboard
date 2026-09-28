@@ -86,9 +86,32 @@ export async function POST(req: Request) {
     const serverCache = getGlobalOperators();
     const cleanUser = username.trim();
 
-    // Check duplicate
-    if (serverCache.some((u) => u.username.toLowerCase() === cleanUser.toLowerCase())) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+    // Check duplicate or update existing
+    const existingIndex = serverCache.findIndex((u) => u.username.toLowerCase() === cleanUser.toLowerCase());
+    if (existingIndex !== -1) {
+      serverCache[existingIndex] = {
+        ...serverCache[existingIndex],
+        name: name.trim() || serverCache[existingIndex].name,
+        role: role || serverCache[existingIndex].role,
+        password: password !== undefined ? password : serverCache[existingIndex].password,
+        shift: shift || serverCache[existingIndex].shift,
+      };
+
+      try {
+        await supabase.from('operators').upsert({
+          id: serverCache[existingIndex].id,
+          username: serverCache[existingIndex].username,
+          name: serverCache[existingIndex].name,
+          role: serverCache[existingIndex].role,
+          password: serverCache[existingIndex].password,
+          shift: serverCache[existingIndex].shift,
+          active: serverCache[existingIndex].active,
+          created_at: serverCache[existingIndex].created_at,
+          updated_at: new Date().toISOString(),
+        });
+      } catch {}
+
+      return NextResponse.json({ operator: serverCache[existingIndex] }, { status: 200 });
     }
 
     const newOperator: OperatorRecord = {

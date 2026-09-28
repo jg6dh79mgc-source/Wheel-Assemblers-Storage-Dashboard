@@ -1,45 +1,54 @@
-'use client';
-
-import { Operator } from '@/types';
+// Dynamic Operator Authentication and Storage
+// Bridges local browser persistence, server memory cache, and Supabase cloud database
 import { supabase } from './supabaseClient';
+import { Operator } from '@/types';
 
-const STORAGE_KEY_USERS = 'wa_operators_db_v4';
-const STORAGE_KEY_CURRENT = 'wa_current_user_v4';
+export type { Operator };
 
-export const DEFAULT_ADMIN: Operator & { password?: string } = {
-  id: 'admin-primary',
-  username: 'admin',
-  name: 'System Administrator',
-  role: 'ADMIN',
-  password: 'admin',
-  shift: 'A',
-  active: true,
-  created_at: new Date().toISOString(),
-};
+const STORAGE_KEY_USERS = 'wheel_assemblers_operators_v3';
+const STORAGE_KEY_CURRENT = 'wheel_assemblers_current_operator_v3';
 
-// Initial in-memory cache
-let inMemoryOperators: (Operator & { password?: string })[] = [DEFAULT_ADMIN];
+// Default system credentials
+export const DEFAULT_OPERATORS: (Operator & { password?: string })[] = [
+  {
+    id: 'admin-primary',
+    username: 'admin',
+    name: 'System Administrator',
+    role: 'ADMIN',
+    password: 'admin',
+    shift: 'A',
+    active: true,
+    created_at: '2026-09-28T00:00:00.000Z',
+  },
+];
+
+let inMemoryOperators: (Operator & { password?: string })[] = [...DEFAULT_OPERATORS];
 
 export function getStoredOperators(): (Operator & { password?: string })[] {
-  if (typeof window === 'undefined') return inMemoryOperators;
+  if (typeof window === 'undefined') {
+    return inMemoryOperators;
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USERS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemoryOperators = parsed;
-        return parsed;
-      }
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(DEFAULT_OPERATORS));
+      return DEFAULT_OPERATORS;
     }
-  } catch {}
-  return inMemoryOperators;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_OPERATORS;
+  } catch {
+    return DEFAULT_OPERATORS;
+  }
 }
 
-// Fetch operators from central Supabase / Server backend (shared across all devices)
+// Bidirectional sync: NEVER wipe local credentials on server redeploy!
+// Merges cloud operators with local storage, and pushes any local operators back to the new server instance.
 export async function syncOperatorsFromCloud(): Promise<(Operator & { password?: string })[]> {
+  const localUsers = getStoredOperators();
   let cloudOps: (Operator & { password?: string })[] = [];
 
-  // 1. Try Next.js server endpoint (which bridges Supabase & cross-device session)
+  // 1. Try Next.js server endpoint
   try {
     const res = await fetch('/api/operators', { cache: 'no-store' });
     if (res.ok) {
@@ -69,17 +78,52 @@ export async function syncOperatorsFromCloud(): Promise<(Operator & { password?:
     } catch {}
   }
 
-  if (cloudOps.length > 0) {
-    inMemoryOperators = cloudOps;
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cloudOps));
-      } catch {}
+  // 3. Bidirectional merge: combine cloud and local users without loss
+  const mergedMap = new Map<string, Operator & { password?: string }>();
+
+  // Add default admin first
+  DEFAULT_OPERATORS.forEach((u) => mergedMap.set(u.username.toLowerCase(), u));
+
+  // Add cloud users
+  cloudOps.forEach((u) => mergedMap.set(u.username.toLowerCase(), u));
+
+  // Add local users (preserves users created before a push/redeploy)
+  const localOnlyUsers: (Operator & { password?: string })[] = [];
+  localUsers.forEach((u) => {
+    const key = u.username.toLowerCase();
+    if (!mergedMap.has(key)) {
+      mergedMap.set(key, u);
+      localOnlyUsers.push(u);
+    } else {
+      // If server doesn't have password or details, keep local
+      const existing = mergedMap.get(key)!;
+      if (!existing.password && u.password) {
+        existing.password = u.password;
+      }
     }
-    return cloudOps;
+  });
+
+  const finalUsers = Array.from(mergedMap.values());
+  inMemoryOperators = finalUsers;
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(finalUsers));
+    } catch {}
+
+    // Reseed server if any local users were missing from fresh container
+    if (localOnlyUsers.length > 0) {
+      localOnlyUsers.forEach((user) => {
+        fetch('/api/operators', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user),
+        }).catch(() => {});
+      });
+    }
   }
 
-  return getStoredOperators();
+  return finalUsers;
 }
 
 export function saveOperator(newOp: {
@@ -109,7 +153,7 @@ export function saveOperator(newOp: {
     } catch {}
   }
 
-  // Push to server / Supabase in background
+  // Push to server / Supabase
   if (typeof window !== 'undefined') {
     fetch('/api/operators', {
       method: 'POST',
