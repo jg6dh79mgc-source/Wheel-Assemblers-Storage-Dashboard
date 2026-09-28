@@ -401,23 +401,28 @@ export default function MobileInspectionView() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
+              <div className="space-y-2.5 pt-2 border-t border-slate-200">
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 mb-1 font-semibold">Date</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1 font-semibold">
+                    Inspection Date
+                  </label>
                   <input
                     type="date"
                     value={inspectionDate}
                     onChange={(e) => setInspectionDate(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800"
+                    className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-blue-900 shadow-2xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 mb-1 font-semibold">Operator</label>
+                  <label className="block text-[11px] font-mono text-slate-600 mb-1 font-semibold">
+                    Inspector / Operator Name
+                  </label>
                   <input
                     type="text"
                     value={inspectorName}
                     onChange={(e) => setInspectorName(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800"
+                    placeholder="Enter operator name"
+                    className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-900 shadow-2xs"
                   />
                 </div>
               </div>
