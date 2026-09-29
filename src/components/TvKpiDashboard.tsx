@@ -191,7 +191,13 @@ export default function TvKpiDashboard() {
   const [currentUser, setCurrentUserState] = useState(getCurrentUser());
   const [shuttle1Resolution, setShuttle1Resolution] = useState(getStoredShuttleResolution('1'));
   const [sensorResolution, setSensorResolution] = useState(getStoredSensorResolution('2'));
-  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>(() => {
+    if (typeof window !== 'undefined') {
+      return getStoredMaintenanceTasks();
+    }
+    return [];
+  });
+  const [maintFilter, setMaintFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED'>('ALL');
 
   // Shuttles fleet state
   const [shuttles, setShuttles] = useState<ShuttleItem[]>(getStoredShuttles());
@@ -237,10 +243,17 @@ export default function TvKpiDashboard() {
 
     loadShuttles();
     refreshResolutionData();
-    const resInterval = setInterval(refreshResolutionData, 2500);
+    const resInterval = setInterval(refreshResolutionData, 1500);
+
+    const handleSync = () => refreshResolutionData();
+    window.addEventListener('wa-maintenance-sync', handleSync);
+    window.addEventListener('storage', handleSync);
+
     return () => {
       clearInterval(timer);
       clearInterval(resInterval);
+      window.removeEventListener('wa-maintenance-sync', handleSync);
+      window.removeEventListener('storage', handleSync);
     };
   }, []);
 
@@ -265,7 +278,10 @@ export default function TvKpiDashboard() {
   const hasInspectionAlert =
     !isShuttle1Resolved && shuttles[0] && shuttles[0].status === 'LOCKED_PENDING_INSPECTION';
   const hasSensorAlert = !isSensorResolved;
-  const emergencyCount = (hasInspectionAlert ? 1 : 0) + (hasSensorAlert ? 1 : 0);
+  const pendingPmTasks = maintenanceTasks.filter((t) => t.status !== 'COMPLETED');
+  const resolvedPmTasks = maintenanceTasks.filter((t) => t.status === 'COMPLETED');
+  const emergencyCount =
+    (hasInspectionAlert ? 1 : 0) + (hasSensorAlert ? 1 : 0) + pendingPmTasks.length;
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-800 flex flex-col font-sans select-none">
@@ -318,10 +334,10 @@ export default function TvKpiDashboard() {
             </button>
 
             {isAlertsOpen && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-300 rounded shadow-2xl p-3 sm:p-4 z-50 space-y-3 text-xs text-slate-800">
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-300 rounded shadow-2xl p-3 sm:p-4 z-50 space-y-3 text-xs text-slate-800 max-h-[85vh] overflow-y-auto">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="font-bold uppercase tracking-wider font-mono text-slate-900 text-[11px]">
-                    System Action Dispatches
+                    System Action Dispatches & PM Tasks ({emergencyCount})
                   </span>
                   <button
                     onClick={() => setIsAlertsOpen(false)}
@@ -331,7 +347,8 @@ export default function TvKpiDashboard() {
                   </button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
+                  {/* Shuttle 1 Pre-op Inspection Interlock Alert */}
                   {hasInspectionAlert ? (
                     <div className="p-2.5 bg-slate-50 border border-slate-300 rounded space-y-1">
                       <div className="font-semibold text-slate-800 text-[11px]">
@@ -357,7 +374,7 @@ export default function TvKpiDashboard() {
                             });
                             refreshResolutionData();
                           }}
-                          className="px-2 py-0.5 bg-[#0a192f] text-white rounded text-[10px] font-mono"
+                          className="px-2 py-0.5 bg-[#0a192f] text-white rounded text-[10px] font-mono font-bold"
                         >
                           RELEASE
                         </button>
@@ -365,6 +382,7 @@ export default function TvKpiDashboard() {
                     </div>
                   ) : null}
 
+                  {/* Shuttle 2 Optical Sensors Overdue Alert */}
                   {hasSensorAlert ? (
                     <div className="p-2.5 bg-red-50 border border-red-300 rounded space-y-1">
                       <div className="font-bold text-red-900 text-[11px]">
@@ -388,9 +406,93 @@ export default function TvKpiDashboard() {
                     </div>
                   ) : null}
 
-                  {!hasInspectionAlert && !hasSensorAlert && (
+                  {/* Pending Preventative Maintenance Work Orders */}
+                  {pendingPmTasks.map((t) => (
+                    <div
+                      key={`alert-${t.id}`}
+                      className={`p-2.5 rounded border space-y-1.5 ${
+                        t.priority === 'CRITICAL'
+                          ? 'bg-red-50 border-red-300 text-red-900'
+                          : t.priority === 'HIGH'
+                          ? 'bg-amber-50/70 border-amber-300 text-slate-800'
+                          : 'bg-slate-50 border-slate-300 text-slate-800'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-1.5">
+                        <div>
+                          <div className="font-bold font-mono text-[11px] leading-tight text-slate-900">
+                            {t.task_title}
+                          </div>
+                          <div className="text-[10px] font-mono text-slate-600 mt-0.5">
+                            {t.shuttle} • {t.component || 'General'}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border shrink-0 ${
+                            t.priority === 'CRITICAL'
+                              ? 'bg-red-100 text-red-800 border-red-300'
+                              : t.priority === 'HIGH'
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
+                              : 'bg-slate-100 text-slate-700 border-slate-300'
+                          }`}
+                        >
+                          {t.priority}
+                        </span>
+                      </div>
+
+                      {t.instructions && (
+                        <p className="text-[10px] text-slate-600 line-clamp-1 italic bg-white/70 p-1 rounded border border-slate-200">
+                          {t.instructions}
+                        </p>
+                      )}
+
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/80">
+                        <span className="text-[10px] font-mono text-slate-600">
+                          Due: {t.due_date || 'Scheduled'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            updateMaintenanceTaskStatus(t.id, 'COMPLETED', currentUser?.name || 'Administrator');
+                            refreshResolutionData();
+                          }}
+                          className="px-2 py-0.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded text-[10px] font-mono font-bold shadow-2xs"
+                        >
+                          RESOLVE / COMPLETE
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Recently Resolved Work Orders */}
+                  {resolvedPmTasks.length > 0 && (
+                    <div className="pt-2 border-t border-slate-200">
+                      <span className="text-[10px] font-mono font-bold uppercase text-slate-500 block mb-1">
+                        Resolved Work Orders ({resolvedPmTasks.length})
+                      </span>
+                      <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                        {resolvedPmTasks.slice(0, 5).map((t) => (
+                          <div
+                            key={`resolved-alert-${t.id}`}
+                            className="p-2 bg-emerald-50/60 border border-emerald-200 rounded text-[10px] font-mono flex justify-between items-center"
+                          >
+                            <div className="truncate mr-2">
+                              <span className="font-bold text-emerald-950 block truncate">{t.task_title}</span>
+                              <span className="text-emerald-700 text-[9px]">
+                                {t.shuttle} • Resolved by {t.completed_by || 'Technician'}
+                              </span>
+                            </div>
+                            <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold text-[9px] shrink-0">
+                              RESOLVED
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {!hasInspectionAlert && !hasSensorAlert && pendingPmTasks.length === 0 && (
                     <div className="p-3 text-center text-slate-500 font-mono text-[11px]">
-                      All vitals within nominal operational limits.
+                      All vitals within nominal operational limits. Zero pending alerts.
                     </div>
                   )}
                 </div>
@@ -1213,6 +1315,168 @@ export default function TvKpiDashboard() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Scheduled Preventative Maintenance Tasks & Work Orders */}
+              <div className="bg-white border border-slate-300 rounded p-4 shadow-xs space-y-3">
+                <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2.5">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 font-mono uppercase tracking-wide">
+                      Preventative Maintenance Work Orders ({maintenanceTasks.length})
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-mono">
+                      Real-time dispatches, odometer/lift cycle triggers, and scheduled admin PM actions
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex bg-slate-100 p-0.5 rounded border border-slate-300 text-[10px] font-mono">
+                      <button
+                        onClick={() => setMaintFilter('ALL')}
+                        className={`px-2 py-0.5 rounded font-bold transition ${
+                          maintFilter === 'ALL' ? 'bg-[#0a192f] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        All ({maintenanceTasks.length})
+                      </button>
+                      <button
+                        onClick={() => setMaintFilter('PENDING')}
+                        className={`px-2 py-0.5 rounded font-bold transition ${
+                          maintFilter === 'PENDING' ? 'bg-[#0a192f] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Pending ({pendingPmTasks.length})
+                      </button>
+                      <button
+                        onClick={() => setMaintFilter('COMPLETED')}
+                        className={`px-2 py-0.5 rounded font-bold transition ${
+                          maintFilter === 'COMPLETED' ? 'bg-[#0a192f] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Resolved ({resolvedPmTasks.length})
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={openAddPmAction}
+                      className="px-2.5 py-1 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded text-xs font-mono font-bold transition shadow-2xs"
+                    >
+                      + Schedule PM Action
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 border-b border-slate-300 text-[11px]">
+                        <th className="py-2 px-3">Equipment</th>
+                        <th className="py-2 px-3">Task Title & Component</th>
+                        <th className="py-2 px-3">Priority</th>
+                        <th className="py-2 px-3">Trigger / Threshold</th>
+                        <th className="py-2 px-3">Due Date</th>
+                        <th className="py-2 px-3">Status</th>
+                        <th className="py-2 px-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 text-[11px]">
+                      {(maintFilter === 'ALL'
+                        ? maintenanceTasks
+                        : maintFilter === 'PENDING'
+                        ? pendingPmTasks
+                        : resolvedPmTasks
+                      ).map((task) => {
+                        const isCompleted = task.status === 'COMPLETED';
+                        return (
+                          <tr key={`dashboard-maint-${task.id}`} className="hover:bg-slate-50 transition">
+                            <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">
+                              {task.shuttle}
+                            </td>
+                            <td className="py-2.5 px-3 min-w-[220px]">
+                              <span className="font-bold text-slate-900 block">{task.task_title}</span>
+                              <span className="text-[10px] text-slate-500">{task.component || 'General Equipment'}</span>
+                              {task.instructions && (
+                                <span className="block text-[10px] text-slate-600 italic line-clamp-1 mt-0.5">
+                                  {task.instructions}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                  task.priority === 'CRITICAL'
+                                    ? 'bg-red-50 text-red-700 border-red-300'
+                                    : task.priority === 'HIGH'
+                                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                    : 'bg-slate-100 text-slate-700 border-slate-300'
+                                }`}
+                              >
+                                {task.priority}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap text-slate-700">
+                              {task.threshold_metric || 'Scheduled PM'}
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap text-slate-700">
+                              {task.due_date || 'Scheduled'}
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              {isCompleted ? (
+                                <div>
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    RESOLVED
+                                  </span>
+                                  <span className="block text-[9px] text-slate-500 mt-0.5">
+                                    by {task.completed_by || 'Technician'}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-900 border border-blue-200">
+                                  {task.status}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                              {isCompleted ? (
+                                <button
+                                  onClick={() => {
+                                    updateMaintenanceTaskStatus(task.id, 'PENDING');
+                                    refreshResolutionData();
+                                  }}
+                                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-[10px] font-bold"
+                                  title="Reopen task"
+                                >
+                                  Reopen
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    updateMaintenanceTaskStatus(
+                                      task.id,
+                                      'COMPLETED',
+                                      currentUser?.name || 'Administrator'
+                                    );
+                                    refreshResolutionData();
+                                  }}
+                                  className="px-2.5 py-1 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded text-[10px] font-bold shadow-2xs"
+                                >
+                                  Resolve / Complete
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {maintenanceTasks.length === 0 && (
+                        <tr>
+                          <td colSpan={7} className="text-center py-6 text-slate-500 font-mono">
+                            Zero preventative maintenance tasks scheduled.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* 52-Week Annual Maintenance Matrix Component */}

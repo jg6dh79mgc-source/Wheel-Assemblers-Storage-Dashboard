@@ -6,9 +6,15 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getCurrentUser, setCurrentUser } from '@/lib/authStore';
 import { getStoredDocuments, DocumentItem } from '@/lib/documentStore';
-import { saveShuttleResolution } from '@/lib/maintenanceStore';
+import {
+  getStoredMaintenanceTasks,
+  updateMaintenanceTaskStatus,
+  saveShuttleResolution,
+  MaintenanceTask,
+} from '@/lib/maintenanceStore';
 import { ShuttleItem, fetchShuttlesFromCloud, getStoredShuttles } from '@/lib/shuttleStore';
 import DigitalSopViewerModal from './DigitalSopViewerModal';
+import WeeklyRackInspectionModal from './WeeklyRackInspectionModal';
 
 export const CHECKLIST_QUESTIONS: { id: number; text: string }[] = [
   { id: 1, text: 'Is the remote clean?' },
@@ -45,6 +51,9 @@ function getBatteryPastelColor(pct: number): string {
 export default function MobileInspectionView() {
   const router = useRouter();
 
+  // Current authenticated user
+  const [currentUser, setCurrentUserState] = useState(getCurrentUser());
+
   // Shuttles state
   const [shuttles, setShuttles] = useState<ShuttleItem[]>([]);
   const [selectedShuttleId, setSelectedShuttleId] = useState<string>('');
@@ -58,7 +67,12 @@ export default function MobileInspectionView() {
   const [isSopDrawerOpen, setIsSopDrawerOpen] = useState(false);
   const [selectedViewerDoc, setSelectedViewerDoc] = useState<DocumentItem | null>(null);
 
-  // Checklist state
+  // Technician Sub-view tab (strictly for MAINTENANCE_TECH and ADMIN)
+  const [techTab, setTechTab] = useState<'DAILY' | 'WEEKLY' | 'PM_TASKS'>('DAILY');
+  const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState(false);
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
+
+  // Checklist state (FR-7.2-04)
   const [answers, setAnswers] = useState<Record<number, { isPassed: boolean | null; comment: string }>>(
     () => {
       const initial: Record<number, { isPassed: boolean | null; comment: string }> = {};
@@ -75,13 +89,23 @@ export default function MobileInspectionView() {
     message: string;
   }>({ status: 'IDLE', message: '' });
 
+  const refreshTasks = () => {
+    setMaintenanceTasks(getStoredMaintenanceTasks());
+  };
+
   useEffect(() => {
     const user = getCurrentUser();
+    setCurrentUserState(user);
     if (user && user.name) {
       setInspectorName(user.name);
     }
 
     setDocuments(getStoredDocuments());
+    refreshTasks();
+
+    const handleSync = () => refreshTasks();
+    window.addEventListener('wa-maintenance-sync', handleSync);
+    window.addEventListener('storage', handleSync);
 
     async function loadShuttles() {
       const stored = getStoredShuttles();
@@ -97,6 +121,11 @@ export default function MobileInspectionView() {
       }
     }
     loadShuttles();
+
+    return () => {
+      window.removeEventListener('wa-maintenance-sync', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, []);
 
   const handleToggle = (id: number, passed: boolean) => {
@@ -234,8 +263,18 @@ export default function MobileInspectionView() {
     }
   };
 
+  const handleResolveTask = (taskId: string) => {
+    const updated = updateMaintenanceTaskStatus(
+      taskId,
+      'COMPLETED',
+      currentUser?.name || inspectorName || 'Technician'
+    );
+    setMaintenanceTasks(updated);
+  };
+
   const selectedShuttleObj = shuttles.find((s) => s.id === selectedShuttleId);
-  const currentUser = getCurrentUser();
+  const isTechnician = currentUser?.role === 'MAINTENANCE_TECH' || currentUser?.role === 'ADMIN';
+  const pendingTasksCount = maintenanceTasks.filter((t) => t.status !== 'COMPLETED').length;
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-800 font-sans pb-12 select-none">
@@ -245,7 +284,11 @@ export default function MobileInspectionView() {
         <div className="flex items-center justify-between gap-2 pb-1.5">
           <div className="min-w-0">
             <span className="text-[9px] font-mono uppercase tracking-wider text-blue-300 block leading-tight">
-              OPERATOR ACCESS
+              {currentUser?.role === 'MAINTENANCE_TECH'
+                ? 'TECHNICIAN GATE'
+                : currentUser?.role === 'ADMIN'
+                ? 'ADMIN / TECH GATE'
+                : 'OPERATOR ACCESS'}
             </span>
             <h1 className="text-xs sm:text-sm font-bold text-white font-mono truncate leading-tight">
               Wheel Assemblers Mobile Gate
@@ -282,198 +325,409 @@ export default function MobileInspectionView() {
             </Link>
           )}
         </div>
+
+        {/* Row 3: Role-Based Sub-Navigation for Technicians ONLY */}
+        {isTechnician && (
+          <div className="flex border-t border-slate-800 pt-2 mt-1.5 gap-1 text-[11px] font-mono">
+            <button
+              onClick={() => setTechTab('DAILY')}
+              className={`flex-1 py-1 px-1 rounded text-center transition font-bold truncate ${
+                techTab === 'DAILY'
+                  ? 'bg-[#1e3a8a] text-white border border-blue-700'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              Daily Check (FR-7.2-04)
+            </button>
+            <button
+              onClick={() => setTechTab('WEEKLY')}
+              className={`flex-1 py-1 px-1 rounded text-center transition font-bold truncate ${
+                techTab === 'WEEKLY'
+                  ? 'bg-[#1e3a8a] text-white border border-blue-700'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              Weekly Rack (FR-7.2-03)
+            </button>
+            <button
+              onClick={() => setTechTab('PM_TASKS')}
+              className={`flex-1 py-1 px-1 rounded text-center transition font-bold flex items-center justify-center gap-1 truncate ${
+                techTab === 'PM_TASKS'
+                  ? 'bg-[#1e3a8a] text-white border border-blue-700'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <span>PM Tasks</span>
+              {pendingTasksCount > 0 && (
+                <span className="bg-red-600 text-white text-[9px] px-1 py-0.2 rounded-full font-bold">
+                  {pendingTasksCount}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </header>
 
-      {/* Main Checklist Body (Strictly FR-7.2-04 Daily Checksheet Only) */}
+      {/* Main Body */}
       <main className="max-w-md mx-auto px-3.5 pt-3 space-y-3">
-        {/* Live Interlock Status */}
-        {submissionResult.status === 'SUCCESS_ACTIVE' && (
-          <div className="p-3.5 rounded bg-blue-50 border border-blue-300 text-blue-950 text-xs shadow-2xs">
-            <strong className="block font-bold">INTERLOCK RELEASED: ACTIVE</strong>
-            <p className="mt-0.5">{submissionResult.message}</p>
-          </div>
-        )}
-
-        {submissionResult.status === 'FAILED_FAULT' && (
-          <div className="p-3.5 rounded bg-red-50 border border-red-300 text-red-900 text-xs shadow-2xs">
-            <strong className="block font-bold">SHUTTLE LOCKED: CRITICAL FAULT DETECTED</strong>
-            <p className="mt-0.5">{submissionResult.message}</p>
-          </div>
-        )}
-
-        {/* Shuttle Selection & Inspector Details Card (Strictly Bound, Zero Extrusion) */}
-        <div className="bg-white border border-slate-300 rounded p-3.5 space-y-3 shadow-xs overflow-hidden box-border">
-          <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 border-b border-slate-200 pb-1.5">
-            <span>Location: <strong className="text-slate-800">Rim Storeroom</strong></span>
-            <span>Checksheet: <strong className="text-slate-800">FR-7.2-04</strong></span>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-mono uppercase text-slate-700 mb-1.5 font-semibold">
-              Select Shuttle Unit ({shuttles.length} Registered) *
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {shuttles.map((shuttle) => (
-                <button
-                  key={shuttle.id}
-                  type="button"
-                  onClick={() => setSelectedShuttleId(shuttle.id)}
-                  className={`p-2 rounded text-xs font-bold transition flex flex-col justify-between border text-left ${
-                    selectedShuttleId === shuttle.id
-                      ? 'bg-[#1e3a8a] border-blue-900 text-white shadow-sm'
-                      : 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-mono">{shuttle.code || 'SHUTTLE'}</span>
-                    <span
-                      className={`h-2 w-2 rounded-full shrink-0 ${
-                        shuttle.status === 'FAULT' ? 'bg-red-500' : 'bg-emerald-400'
-                      }`}
-                    />
-                  </div>
-                  <span className="text-[10px] opacity-85 mt-1 truncate w-full">{shuttle.display_name}</span>
-                </button>
-              ))}
-            </div>
-
-            {selectedShuttleObj && (
-              <div className="mt-2 text-xs font-mono text-slate-700 flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200">
-                <div>
-                  Status: <strong className={selectedShuttleObj.status === 'FAULT' ? 'text-red-700' : 'text-slate-900'}>{selectedShuttleObj.status}</strong>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>BATTERY:</span>
-                  <span
-                    className="px-1.5 py-0.2 rounded text-[11px] font-bold text-slate-900"
-                    style={{ backgroundColor: getBatteryPastelColor(selectedShuttleObj.battery_pct ?? 100) }}
-                  >
-                    {selectedShuttleObj.battery_pct ?? 100}%
-                  </span>
-                </div>
+        {/* SUB-VIEW 1: DAILY INSPECTION (FR-7.2-04) - Rendered for Operators and Technicians on DAILY tab */}
+        {(!isTechnician || techTab === 'DAILY') && (
+          <>
+            {/* Live Interlock Status */}
+            {submissionResult.status === 'SUCCESS_ACTIVE' && (
+              <div className="p-3.5 rounded bg-blue-50 border border-blue-300 text-blue-950 text-xs shadow-2xs">
+                <strong className="block font-bold">INTERLOCK RELEASED: ACTIVE</strong>
+                <p className="mt-0.5">{submissionResult.message}</p>
               </div>
             )}
-          </div>
 
-          {/* Date & Operator Fields: Box-Border, Max-Width Confined */}
-          <div className="space-y-2.5 pt-2 border-t border-slate-200">
-            <div className="w-full min-w-0">
-              <label className="block text-[11px] font-mono text-slate-600 mb-1 font-semibold">
-                Inspection Date
-              </label>
-              <input
-                type="date"
-                value={inspectionDate}
-                onChange={(e) => setInspectionDate(e.target.value)}
-                className="w-full max-w-full box-border bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 font-mono focus:outline-none focus:border-blue-900"
-                style={{ maxWidth: '100%', minWidth: 0 }}
-              />
-            </div>
-            <div className="w-full min-w-0">
-              <label className="block text-[11px] font-mono text-slate-600 mb-1 font-semibold">
-                Inspector / Operator Name
-              </label>
-              <input
-                type="text"
-                value={inspectorName}
-                onChange={(e) => setInspectorName(e.target.value)}
-                placeholder="Enter operator name"
-                className="w-full max-w-full box-border bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-900"
-                style={{ maxWidth: '100%', minWidth: 0 }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 22 Checklist Form Questions */}
-        <form onSubmit={handleSubmit} className="space-y-2.5">
-          <div className="flex justify-between items-center text-xs font-mono px-1">
-            <span className="text-slate-600">
-              Completed: <strong className="text-slate-900">{totalAnswered}/22</strong>
-            </span>
-            {missingCommentsCount > 0 && (
-              <span className="text-red-700 font-bold text-[11px]">
-                {missingCommentsCount} failure comment(s) required
-              </span>
+            {submissionResult.status === 'FAILED_FAULT' && (
+              <div className="p-3.5 rounded bg-red-50 border border-red-300 text-red-900 text-xs shadow-2xs">
+                <strong className="block font-bold">SHUTTLE LOCKED: CRITICAL FAULT DETECTED</strong>
+                <p className="mt-0.5">{submissionResult.message}</p>
+              </div>
             )}
-          </div>
 
-          {CHECKLIST_QUESTIONS.map((q) => {
-            const current = answers[q.id];
-            const isNo = current.isPassed === false;
+            {/* Shuttle Selection & Inspector Details Card */}
+            <div className="bg-white border border-slate-300 rounded p-3.5 space-y-3 shadow-xs overflow-hidden box-border">
+              <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 border-b border-slate-200 pb-1.5">
+                <span>Location: <strong className="text-slate-800">Rim Storeroom</strong></span>
+                <span>Checksheet: <strong className="text-slate-800">FR-7.2-04</strong></span>
+              </div>
 
-            return (
-              <div
-                key={q.id}
-                className={`p-3 rounded border transition bg-white shadow-xs ${
-                  isNo
-                    ? 'border-red-400 bg-red-50/50'
-                    : current.isPassed === true
-                    ? 'border-blue-200'
-                    : 'border-slate-200'
-                }`}
-              >
-                <p className="text-xs text-slate-900 leading-snug font-medium">
-                  {q.id}. {q.text}
-                </p>
-
-                <div className="flex gap-2 mt-2.5">
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(q.id, true)}
-                    className={`flex-1 py-2 px-2 rounded text-xs font-bold border transition ${
-                      current.isPassed === true
-                        ? 'bg-[#1e3a8a] border-blue-900 text-white'
-                        : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    YES (PASS)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(q.id, false)}
-                    className={`flex-1 py-2 px-2 rounded text-xs font-bold border transition ${
-                      current.isPassed === false
-                        ? 'bg-red-600 border-red-700 text-white'
-                        : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    NO (DEFECT)
-                  </button>
+              <div>
+                <label className="block text-[11px] font-mono uppercase text-slate-700 mb-1.5 font-semibold">
+                  Select Shuttle Unit ({shuttles.length} Registered) *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {shuttles.map((shuttle) => (
+                    <button
+                      key={shuttle.id}
+                      type="button"
+                      onClick={() => setSelectedShuttleId(shuttle.id)}
+                      className={`p-2 rounded text-xs font-bold transition flex flex-col justify-between border text-left ${
+                        selectedShuttleId === shuttle.id
+                          ? 'bg-[#1e3a8a] border-blue-900 text-white shadow-sm'
+                          : 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="font-mono">{shuttle.code || 'SHUTTLE'}</span>
+                        <span
+                          className={`h-2 w-2 rounded-full shrink-0 ${
+                            shuttle.status === 'FAULT' ? 'bg-red-500' : 'bg-emerald-400'
+                          }`}
+                        />
+                      </div>
+                      <span className="text-[10px] opacity-85 mt-1 truncate w-full">{shuttle.display_name}</span>
+                    </button>
+                  ))}
                 </div>
 
-                {isNo && (
-                  <div className="mt-2.5 pt-2 border-t border-red-200">
-                    <textarea
-                      rows={2}
-                      placeholder="Mandatory failure observation and action..."
-                      value={current.comment}
-                      onChange={(e) => handleCommentChange(q.id, e.target.value)}
-                      className="w-full bg-white border border-red-400 rounded p-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-red-600"
-                      required
-                    />
+                {selectedShuttleObj && (
+                  <div className="mt-2 text-xs font-mono text-slate-700 flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200">
+                    <div>
+                      Status: <strong className={selectedShuttleObj.status === 'FAULT' ? 'text-red-700' : 'text-slate-900'}>{selectedShuttleObj.status}</strong>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>BATTERY:</span>
+                      <span
+                        className="px-1.5 py-0.2 rounded text-[11px] font-bold text-slate-900"
+                        style={{ backgroundColor: getBatteryPastelColor(selectedShuttleObj.battery_pct ?? 100) }}
+                      >
+                        {selectedShuttleObj.battery_pct ?? 100}%
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
-            );
-          })}
 
-          <button
-            type="submit"
-            disabled={!isFormValid || isSubmitting}
-            className={`w-full py-3 rounded font-bold text-xs uppercase tracking-wider shadow transition ${
-              isFormValid && !isSubmitting
-                ? 'bg-[#1e3a8a] hover:bg-blue-900 text-white'
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            {isSubmitting ? 'Transmitting Inspection...' : 'Submit Inspection & Unlock Shuttle'}
-          </button>
-        </form>
+              {/* Date & Operator Fields */}
+              <div className="space-y-2.5 pt-2 border-t border-slate-200">
+                <div className="w-full min-w-0">
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">
+                    Inspection Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={inspectionDate}
+                    onChange={(e) => setInspectionDate(e.target.value)}
+                    className="w-full max-w-full min-w-0 bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono box-border"
+                  />
+                </div>
+
+                <div className="w-full min-w-0">
+                  <label className="block text-[11px] font-mono text-slate-700 mb-1 font-semibold">
+                    Inspector Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={inspectorName}
+                    onChange={(e) => setInspectorName(e.target.value)}
+                    placeholder="Enter full name"
+                    className="w-full max-w-full min-w-0 bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-800 focus:border-blue-600 outline-none font-mono box-border"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Checklist Progress */}
+            <div className="bg-white border border-slate-300 rounded p-3 flex justify-between items-center text-xs shadow-xs">
+              <div>
+                <span className="font-mono text-slate-500 block text-[10px]">VERIFICATION PROGRESS</span>
+                <span className="font-mono font-bold text-slate-900">{totalAnswered} / 22 Items Completed</span>
+              </div>
+              <div
+                className={`px-2.5 py-1 rounded text-xs font-mono font-bold ${
+                  isFormValid
+                    ? 'bg-blue-900 text-white'
+                    : 'bg-slate-100 text-slate-600 border border-slate-300'
+                }`}
+              >
+                {isFormValid ? 'READY TO SUBMIT' : `${22 - totalAnswered} REMAINING`}
+              </div>
+            </div>
+
+            {/* Inspection Questions Form */}
+            <form onSubmit={handleSubmit} className="space-y-2.5">
+              {CHECKLIST_QUESTIONS.map((q) => {
+                const current = answers[q.id];
+                const isNo = current.isPassed === false;
+
+                return (
+                  <div
+                    key={q.id}
+                    className={`p-3 rounded border transition bg-white shadow-xs ${
+                      isNo
+                        ? 'border-red-400 bg-red-50/50'
+                        : current.isPassed === true
+                        ? 'border-blue-200'
+                        : 'border-slate-200'
+                    }`}
+                  >
+                    <p className="text-xs text-slate-900 leading-snug font-medium">
+                      {q.id}. {q.text}
+                    </p>
+
+                    <div className="flex gap-2 mt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(q.id, true)}
+                        className={`flex-1 py-2 px-2 rounded text-xs font-bold border transition ${
+                          current.isPassed === true
+                            ? 'bg-[#1e3a8a] border-blue-900 text-white'
+                            : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        YES (PASS)
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(q.id, false)}
+                        className={`flex-1 py-2 px-2 rounded text-xs font-bold border transition ${
+                          current.isPassed === false
+                            ? 'bg-red-600 border-red-700 text-white'
+                            : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        NO (DEFECT)
+                      </button>
+                    </div>
+
+                    {isNo && (
+                      <div className="mt-2.5 pt-2 border-t border-red-200">
+                        <textarea
+                          rows={2}
+                          placeholder="Mandatory failure observation and action..."
+                          value={current.comment}
+                          onChange={(e) => handleCommentChange(q.id, e.target.value)}
+                          className="w-full bg-white border border-red-400 rounded p-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-red-600"
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              <button
+                type="submit"
+                disabled={!isFormValid || isSubmitting}
+                className={`w-full py-3 rounded font-bold text-xs uppercase tracking-wider shadow transition ${
+                  isFormValid && !isSubmitting
+                    ? 'bg-[#1e3a8a] hover:bg-blue-900 text-white'
+                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                {isSubmitting ? 'Transmitting Inspection...' : 'Submit Inspection & Unlock Shuttle'}
+              </button>
+            </form>
+          </>
+        )}
+
+        {/* SUB-VIEW 2: WEEKLY RACK AUDIT (FR-7.2-03) - Technicians Only */}
+        {isTechnician && techTab === 'WEEKLY' && (
+          <div className="space-y-3">
+            <div className="bg-white border border-slate-300 rounded p-4 space-y-3 shadow-xs">
+              <div className="border-b border-slate-200 pb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-blue-900 font-bold block">
+                  Weekly Plant Maintenance
+                </span>
+                <h2 className="text-sm font-bold text-slate-900 font-mono uppercase">
+                  FR-7.2-03 Pallet Rack Inspection
+                </h2>
+                <p className="text-xs text-slate-600 mt-1">
+                  Weekly physical audit of deep-lane storage rack structures across Sheets 1 & 2 (Cavities G-00 through L-01).
+                </p>
+              </div>
+
+              <div className="space-y-2 text-xs font-mono text-slate-700">
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded space-y-1">
+                  <div className="font-bold text-slate-900">Sheet 1: Uprights, Anchors & Bases</div>
+                  <p className="text-[11px] text-slate-600">
+                    Audit upright green/amber/red impact deformation, loose shims, damaged anchors, and rack stoppers.
+                  </p>
+                </div>
+
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded space-y-1">
+                  <div className="font-bold text-slate-900">Sheet 2: Shuttle Rail System</div>
+                  <p className="text-[11px] text-slate-600">
+                    Check support brackets, centering guide rails, and end-of-lane physical stops across all 13 active lanes.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => setIsWeeklyModalOpen(true)}
+                  className="w-full py-2.5 bg-[#0a192f] hover:bg-[#172554] text-white rounded font-mono font-bold text-xs uppercase tracking-wider transition"
+                >
+                  Open FR-7.2-03 Digital Inspection Modal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUB-VIEW 3: PM TASKS RESOLUTION - Technicians Only */}
+        {isTechnician && techTab === 'PM_TASKS' && (
+          <div className="space-y-3">
+            <div className="bg-white border border-slate-300 rounded p-3 flex justify-between items-center text-xs shadow-xs">
+              <div>
+                <span className="font-mono text-slate-500 block text-[10px]">MAINTENANCE QUEUE</span>
+                <span className="font-mono font-bold text-slate-900">{pendingTasksCount} Pending Work Orders</span>
+              </div>
+              <button
+                onClick={refreshTasks}
+                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-xs font-mono font-bold"
+              >
+                Refresh List
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {maintenanceTasks.map((task) => {
+                const isCompleted = task.status === 'COMPLETED';
+                return (
+                  <div
+                    key={task.id}
+                    className={`bg-white border rounded p-3.5 space-y-2 shadow-xs transition ${
+                      isCompleted
+                        ? 'border-emerald-300 bg-emerald-50/20'
+                        : task.priority === 'CRITICAL'
+                        ? 'border-red-300'
+                        : 'border-slate-300'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                              task.priority === 'CRITICAL'
+                                ? 'bg-red-50 text-red-700 border-red-300'
+                                : task.priority === 'HIGH'
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-slate-100 text-slate-700 border-slate-300'
+                            }`}
+                          >
+                            {task.priority}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500 font-bold">
+                            {task.shuttle}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-xs font-mono">{task.task_title}</h3>
+                      </div>
+
+                      <span
+                        className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
+                          isCompleted
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : 'bg-blue-50 text-blue-900 border-blue-200'
+                        }`}
+                      >
+                        {task.status}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] font-mono text-slate-600 grid grid-cols-2 gap-1 pt-1 border-t border-slate-200">
+                      <div>
+                        Component: <span className="text-slate-800">{task.component || 'General'}</span>
+                      </div>
+                      <div>
+                        Due: <span className="text-slate-800">{task.due_date || 'Scheduled'}</span>
+                      </div>
+                      <div className="col-span-2">
+                        Trigger: <span className="text-slate-800">{task.threshold_metric || 'Periodic PM'}</span>
+                      </div>
+                    </div>
+
+                    {task.instructions && (
+                      <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-200 font-sans italic">
+                        {task.instructions}
+                      </p>
+                    )}
+
+                    <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                      {isCompleted ? (
+                        <div className="text-[10px] font-mono text-emerald-800">
+                          Resolved by <strong>{task.completed_by || 'Technician'}</strong>
+                          {task.completed_at && ` on ${task.completed_at.split('T')[0]}`}
+                        </div>
+                      ) : (
+                        <div className="text-[10px] font-mono text-slate-500">
+                          Assigned: {task.assigned_to}
+                        </div>
+                      )}
+
+                      {!isCompleted && (
+                        <button
+                          type="button"
+                          onClick={() => handleResolveTask(task.id)}
+                          className="px-3 py-1 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded text-xs font-mono font-bold transition shadow-xs"
+                        >
+                          Mark Complete & Resolve
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {maintenanceTasks.length === 0 && (
+                <div className="p-6 bg-white border border-slate-300 rounded text-center text-xs font-mono text-slate-500">
+                  No PM tasks currently scheduled.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* Standardized Documents Side Drawer (Streamlined, No Long Descriptions) */}
+      {/* Standardized Documents Side Drawer (Streamlined, Direct View) */}
       {isSopDrawerOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-end">
           <div className="w-full max-w-sm bg-white border-l border-slate-300 h-full p-4 overflow-y-auto flex flex-col justify-between shadow-2xl">
@@ -493,7 +747,7 @@ export default function MobileInspectionView() {
                 </button>
               </div>
 
-              {/* Streamlined Document List without verbose descriptions */}
+              {/* Streamlined Document List */}
               <div className="space-y-2">
                 {documents.map((doc) => (
                   <div
@@ -530,6 +784,12 @@ export default function MobileInspectionView() {
         document={selectedViewerDoc}
         isOpen={!!selectedViewerDoc}
         onClose={() => setSelectedViewerDoc(null)}
+      />
+
+      {/* FR-7.2-03 Weekly Pallet Rack Inspection Modal */}
+      <WeeklyRackInspectionModal
+        isOpen={isWeeklyModalOpen}
+        onClose={() => setIsWeeklyModalOpen(false)}
       />
     </div>
   );
