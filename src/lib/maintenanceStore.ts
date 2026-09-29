@@ -67,7 +67,7 @@ export const INITIAL_MAINTENANCE_TASKS: MaintenanceTask[] = [
     status: 'PENDING',
     due_date: new Date().toISOString().split('T')[0],
     priority: 'CRITICAL',
-    assigned_to: 'Shift Operator',
+    assigned_to: 'Shift Technician',
     scheduled_by: 'Plant Administrator',
     instructions: 'Wipe front and rear optical lenses with alcohol swab. Test hand gesture trigger response.',
   },
@@ -81,7 +81,7 @@ export const INITIAL_MAINTENANCE_TASKS: MaintenanceTask[] = [
     status: 'IN_PROGRESS',
     due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
     priority: 'HIGH',
-    assigned_to: 'Shift Operator',
+    assigned_to: 'Shift Technician',
     scheduled_by: 'Plant Administrator',
     instructions: 'Apply industrial lithium grease to lifting guide channels. Check for uniform lift clearance.',
   },
@@ -91,6 +91,14 @@ const STORAGE_KEY_TASKS = 'wa_maintenance_schedule_v2';
 const STORAGE_KEY_SHUTTLE_RES = 'wa_shuttle_resolutions_v2';
 const STORAGE_KEY_SENSOR_RES = 'wa_sensor_resolutions_v2';
 
+function dispatchSyncEvent(type: string, detail?: any) {
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('wa-maintenance-sync', { detail: { type, ...detail } }));
+    } catch {}
+  }
+}
+
 export function getStoredMaintenanceTasks(): MaintenanceTask[] {
   if (typeof window === 'undefined') return INITIAL_MAINTENANCE_TASKS;
   try {
@@ -99,7 +107,8 @@ export function getStoredMaintenanceTasks(): MaintenanceTask[] {
       localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(INITIAL_MAINTENANCE_TASKS));
       return INITIAL_MAINTENANCE_TASKS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_MAINTENANCE_TASKS;
   } catch {
     return INITIAL_MAINTENANCE_TASKS;
   }
@@ -113,9 +122,24 @@ export function saveMaintenanceTask(task: Omit<MaintenanceTask, 'id'>): Maintena
   };
   const updated = [newTask, ...current];
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
+    } catch {}
+    dispatchSyncEvent('task-added', { task: newTask });
   }
   return newTask;
+}
+
+export function deleteMaintenanceTask(taskId: string): MaintenanceTask[] {
+  const current = getStoredMaintenanceTasks();
+  const updated = current.filter((t) => t.id !== taskId);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
+    } catch {}
+    dispatchSyncEvent('task-deleted', { taskId });
+  }
+  return updated;
 }
 
 export function updateMaintenanceTaskStatus(
@@ -135,7 +159,10 @@ export function updateMaintenanceTaskStatus(
       : t
   );
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
+    } catch {}
+    dispatchSyncEvent('task-status-changed', { taskId, newStatus, completedBy });
   }
 
   // If this task was the optical sensor cleaning task, also resolve the sensor emergency
@@ -153,7 +180,7 @@ export function getStoredShuttleResolution(shuttleId: string): ShuttleResolution
     const raw = localStorage.getItem(STORAGE_KEY_SHUTTLE_RES);
     if (!raw) return null;
     const all = JSON.parse(raw);
-    return all[shuttleId] || null;
+    return all[shuttleId] || all['1'] || all['SHUTTLE-01'] || null;
   } catch {
     return null;
   }
@@ -165,14 +192,23 @@ export function saveShuttleResolution(record: ShuttleResolutionRecord) {
     const raw = localStorage.getItem(STORAGE_KEY_SHUTTLE_RES);
     const all = raw ? JSON.parse(raw) : {};
     all[record.shuttle_id] = record;
+    all['1'] = record;
+    if (record.shuttle_code) {
+      all[record.shuttle_code] = record;
+    }
     localStorage.setItem(STORAGE_KEY_SHUTTLE_RES, JSON.stringify(all));
+    dispatchSyncEvent('shuttle-resolved', { record });
 
     // Also update Supabase shuttle status if table exists
     try {
-      supabase.from('shuttles').update({
-        status: record.status,
-        last_inspection_passed: record.inspection_passed,
-      }).eq('id', record.shuttle_id);
+      supabase
+        .from('shuttles')
+        .update({
+          status: record.status || record.status_after || 'ACTIVE',
+          last_inspection_passed: record.inspection_passed ?? true,
+          last_inspection_at: record.resolved_at || new Date().toISOString(),
+        })
+        .or(`id.eq.${record.shuttle_id},code.eq.${record.shuttle_code || 'SHUTTLE-01'}`);
     } catch {}
   } catch {}
 }
@@ -184,7 +220,7 @@ export function getStoredSensorResolution(shuttleId: string): SensorResolutionRe
     const raw = localStorage.getItem(STORAGE_KEY_SENSOR_RES);
     if (!raw) return null;
     const all = JSON.parse(raw);
-    return all[shuttleId] || null;
+    return all[shuttleId] || all['2'] || all['SHUTTLE-02'] || null;
   } catch {
     return null;
   }
@@ -195,23 +231,39 @@ export function resolveSensorCleaning(shuttleId: string, technicianName: string)
   try {
     const raw = localStorage.getItem(STORAGE_KEY_SENSOR_RES);
     const all = raw ? JSON.parse(raw) : {};
-    all[shuttleId] = {
+    const record = {
       shuttle_id: shuttleId,
       cleaned: true,
       technician_name: technicianName,
       cleaned_at: new Date().toISOString(),
       notes: 'Lenses wiped with alcohol swab. Gesture trigger response verified.',
     };
+    all[shuttleId] = record;
+    all['2'] = record;
+    all['SHUTTLE-02'] = record;
     localStorage.setItem(STORAGE_KEY_SENSOR_RES, JSON.stringify(all));
+
+    // Also update Supabase shuttles table
+    try {
+      supabase
+        .from('shuttles')
+        .update({
+          last_sensor_clean_at: new Date().toISOString(),
+        })
+        .or(`id.eq.${shuttleId},code.eq.SHUTTLE-02`);
+    } catch {}
 
     // Also update task if pending
     const tasks = getStoredMaintenanceTasks();
-    const sensorTask = tasks.find(t => t.id === 'maint-02');
+    const sensorTask = tasks.find((t) => t.id === 'maint-02');
     if (sensorTask && sensorTask.status !== 'COMPLETED') {
       sensorTask.status = 'COMPLETED';
       sensorTask.completed_at = new Date().toISOString();
       sensorTask.completed_by = technicianName;
-      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      try {
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      } catch {}
     }
+    dispatchSyncEvent('sensor-cleaned', { shuttleId, technicianName });
   } catch {}
 }

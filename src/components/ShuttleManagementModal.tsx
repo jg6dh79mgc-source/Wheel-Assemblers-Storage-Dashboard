@@ -22,7 +22,7 @@ export default function ShuttleManagementModal({
   const [lane, setLane] = useState('K');
   const [level, setLevel] = useState(0);
   const [batteryPct, setBatteryPct] = useState(100);
-  const [status, setStatus] = useState<'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'MAINTENANCE'>('ACTIVE');
+  const [status, setStatus] = useState<'ACTIVE' | 'LOCKED_PENDING_INSPECTION' | 'MAINTENANCE' | 'FAULT'>('ACTIVE');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -224,6 +224,7 @@ export default function ShuttleManagementModal({
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="LOCKED_PENDING_INSPECTION">LOCKED_PENDING_INSPECTION</option>
                     <option value="MAINTENANCE">MAINTENANCE</option>
+                    <option value="FAULT">FAULT</option>
                   </select>
                 </div>
 

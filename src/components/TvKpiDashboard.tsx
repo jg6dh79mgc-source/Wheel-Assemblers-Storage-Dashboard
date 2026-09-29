@@ -39,7 +39,9 @@ function EngineeringGauge({
   unit?: string;
   isEmergency?: boolean;
 }) {
-  const pct = Math.min(100, Math.max(0, Math.round((value / max) * 100)));
+  const safeMax = max > 0 ? max : 1;
+  const safeVal = typeof value === 'number' && !isNaN(value) ? value : 0;
+  const pct = Math.min(100, Math.max(0, Math.round((safeVal / safeMax) * 100)));
 
   return (
     <div className="bg-white border border-slate-300 p-3 rounded shadow-xs">
@@ -365,8 +367,8 @@ export default function TvKpiDashboard() {
                         <button
                           onClick={() => {
                             saveShuttleResolution({
-                              shuttle_id: '11111111-1111-1111-1111-111111111111',
-                              shuttle_code: 'SHUTTLE-01',
+                              shuttle_id: shuttles[0]?.id || '11111111-1111-1111-1111-111111111111',
+                              shuttle_code: shuttles[0]?.code || 'SHUTTLE-01',
                               resolved_by: currentUser?.name || 'Administrator',
                               resolved_at: new Date().toISOString(),
                               resolution_notes: 'Manual interlock release by Admin authorization.',
